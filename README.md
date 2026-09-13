@@ -42,5 +42,5 @@ SnapFlix is a private, proprietary movies and TV shows streaming platform built 
 
 ## Confidentiality & License
 
-This project is proprietary and confidential. Copyright © 2024-2026 SnapFlix, Inc. All rights reserved.
+This project is proprietary and confidential. Copyright © 2026 SnapFlix, Inc. All rights reserved.
 Unauthorized copying, reverse engineering, redistribution, or public deployment of this software is strictly prohibited.
