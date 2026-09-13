@@ -16,7 +16,7 @@ import { TbFolder, TbFolderFilled } from "react-icons/tb";
 export const siteConfig: SiteConfigType = {
   name: "SnapFlix",
   description: "Watch Movies & TV Shows Online on SnapFlix - Your Private Streaming Platform.",
-  favicon: "/favicon.ico",
+  favicon: "/snapflix.png",
   navItems: [
     {
       label: "Home",

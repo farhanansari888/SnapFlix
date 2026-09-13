@@ -22,7 +22,12 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   manifest: "/manifest.json",
   icons: {
-    icon: siteConfig.favicon,
+    icon: [
+      { url: "/snapflix.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/snapflix.png",
+    apple: "/apple-touch-icon.png",
   },
   twitter: {
     card: "summary",
