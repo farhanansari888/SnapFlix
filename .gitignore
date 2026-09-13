@@ -1,0 +1,70 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Testing & Coverage
+/coverage
+
+# Next.js build output
+/.next/
+/out/
+/build
+
+# Service worker & PWA generated bundles
+/public/**/sw*.js
+/public/**/workbox*.js
+
+# OS & system files
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================================
+# SECURITY & SECRETS: Environment files
+# ==========================================
+.env
+.env*
+!.env.example
+!.env.local.example
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.keys
+
+# ==========================================
+# SECURITY: Certificates, keys, & credentials
+# ==========================================
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.bat
+*serviceAccount*.json
+*credentials*.json
+
+# Supabase local generated state
+supabase/.branches/
+supabase/.temp/
+
+# IDE & Editor configs
+.vscode/
+.idea/
+
+# Vercel
+.vercel
+
+# TypeScript & Cache
+*.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reset Your Password - SnapFlix</title>
+    <!--[if mso]>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+    <![endif]-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Saira:wght@800&family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family:
+        &quot;Poppins&quot;,
+        -apple-system,
+        BlinkMacSystemFont,
+        &quot;Segoe UI&quot;,
+        Roboto,
+        &quot;Helvetica Neue&quot;,
+        Arial,
+        sans-serif;
+      background-color: #0a0a0a;
+      color: #ffffff;
+    "
+  >
+    <table
+      role="presentation"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      align="center"
+      width="100%"
+      style="max-width: 600px; margin: 0 auto"
+    >
+      <tr>
+        <td style="padding: 40px 20px 20px 20px; text-align: center">
+          <!-- Logo/Brand -->
+          <h1
+            style="
+              margin: 0;
+              font-size: 32px;
+              font-weight: 800;
+              letter-spacing: -1px;
+              color: #ffffff;
+              font-family: &quot;Saira&quot;, sans-serif;
+            "
+          >
+            CINE<span style="color: #006fee">X</span>TMA
+          </h1>
+          <p
+            style="
+              margin: 10px 0 0 0;
+              font-size: 14px;
+              color: #6b7280;
+              font-family: &quot;Poppins&quot;, sans-serif;
+            "
+          >
+            Your streaming destination
+          </p>
+        </td>
+      </tr>
+
+      <tr>
+        <td style="padding: 0 20px">
+          <!-- Main Card -->
+          <table
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            width="100%"
+            style="
+              background: linear-gradient(180deg, #18181b 0%, #09090b 100%);
+              border-radius: 16px;
+              border: 1px solid #27272a;
+              overflow: hidden;
+            "
+          >
+            <tr>
+              <td style="padding: 40px 30px">
+                <!-- Icon -->
+                <div style="text-align: center; margin-bottom: 30px">
+                  <div
+                    style="
+                      display: inline-block;
+                      width: 64px;
+                      height: 64px;
+                      background: linear-gradient(135deg, #006fee 0%, #0051bb 100%);
+                      border-radius: 50%;
+                      line-height: 64px;
+                      text-align: center;
+                    "
+                  >
+                    <span style="color: white; font-size: 28px">🔒</span>
+                  </div>
+                </div>
+
+                <!-- Content -->
+                <h2
+                  style="
+                    margin: 0 0 10px 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                    text-align: center;
+                    color: #ffffff;
+                    font-family: &quot;Poppins&quot;, sans-serif;
+                  "
+                >
+                  Reset Your Password
+                </h2>
+
+                <p
+                  style="
+                    margin: 0 0 30px 0;
+                    font-size: 16px;
+                    line-height: 24px;
+                    text-align: center;
+                    color: #a1a1aa;
+                    font-family: &quot;Poppins&quot;, sans-serif;
+                  "
+                >
+                  No worries, it happens to the best of us! Click the button below to reset your
+                  password and get back to streaming.
+                </p>
+
+                <!-- CTA Button -->
+                <table
+                  role="presentation"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  align="center"
+                >
+                  <tr>
+                    <td
+                      style="
+                        border-radius: 8px;
+                        background: linear-gradient(135deg, #006fee 0%, #0051bb 100%);
+                        box-shadow: 0 4px 14px 0 rgba(0, 111, 238, 0.25);
+                      "
+                    >
+                      <a
+                        href="{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password"
+                        target="_blank"
+                        style="
+                          display: inline-block;
+                          padding: 14px 32px;
+                          font-size: 16px;
+                          font-weight: 600;
+                          color: #ffffff;
+                          text-decoration: none;
+                          border-radius: 8px;
+                          font-family: &quot;Poppins&quot;, sans-serif;
+                        "
+                      >
+                        Reset Password
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Security Notice -->
+                <div
+                  style="
+                    margin: 30px 0;
+                    padding: 16px;
+                    background: rgba(239, 68, 68, 0.1);
+                    border: 1px solid rgba(239, 68, 68, 0.2);
+                    border-radius: 8px;
+                  "
+                >
+                  <p
+                    style="
+                      margin: 0;
+                      font-size: 14px;
+                      color: #fca5a5;
+                      text-align: center;
+                      font-family: &quot;Poppins&quot;, sans-serif;
+                    "
+                  >
+                    ⚠️ This link will expire in 1 hour for security reasons
+                  </p>
+                </div>
+
+                <!-- Divider -->
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #27272a" />
+
+                <!-- Alternative Link -->
+                <p
+                  style="
+                    margin: 0 0 10px 0;
+                    font-size: 13px;
+                    color: #6b7280;
+                    text-align: center;
+                    font-family: &quot;Poppins&quot;, sans-serif;
+                  "
+                >
+                  Having trouble with the button? Copy and paste this link:
+                </p>
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 12px;
+                    word-break: break-all;
+                    text-align: center;
+                    font-family: &quot;Poppins&quot;, sans-serif;
+                  "
+                >
+                  <a
+                    href="{{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password"
+                    target="_blank"
+                    style="color: #006fee; text-decoration: none"
+                  >
+                    {{ .SiteURL }}/api/auth/confirm?token_hash={{ .TokenHash
+                    }}&type=recovery&next=/auth/reset-password
+                  </a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="padding: 30px 20px; text-align: center">
+          <p
+            style="
+              margin: 0 0 5px 0;
+              font-size: 13px;
+              color: #6b7280;
+              font-family: &quot;Poppins&quot;, sans-serif;
+            "
+          >
+            You received this email because a password reset was requested for your account.
+          </p>
+          <p
+            style="
+              margin: 0 0 20px 0;
+              font-size: 13px;
+              color: #6b7280;
+              font-family: &quot;Poppins&quot;, sans-serif;
+            "
+          >
+            If you didn't request this, please ignore this email and your password will remain
+            unchanged.
+          </p>
+
+          <!-- Security Tips -->
+          <div
+            style="
+              padding: 20px;
+              background: rgba(0, 111, 238, 0.05);
+              border-radius: 8px;
+              margin-bottom: 20px;
+            "
+          >
+            <p
+              style="
+                margin: 0 0 10px 0;
+                font-size: 12px;
+                color: #94a3b8;
+                font-weight: 600;
+                font-family: &quot;Poppins&quot;, sans-serif;
+              "
+            >
+              🔐 Security Tips:
+            </p>
+            <p
+              style="
+                margin: 0;
+                font-size: 12px;
+                color: #64748b;
+                line-height: 20px;
+                font-family: &quot;Poppins&quot;, sans-serif;
+              "
+            >
+              • Never share your password with anyone<br />
+              • Use a unique password for each account<br />
+              • Enable two-factor authentication when available
+            </p>
+          </div>
+
+          <div style="margin-top: 20px">
+            <p
+              style="
+                margin: 0;
+                font-size: 12px;
+                color: #52525b;
+                font-family: &quot;Poppins&quot;, sans-serif;
+              "
+            >
+              © 2025-2026 SnapFlix. All rights reserved.
+            </p>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

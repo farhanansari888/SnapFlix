@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="100%" height="100%">
+  <defs>
+    <linearGradient id="netflixAvatarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E50914" />
+      <stop offset="70%" stop-color="#DC101B" />
+      <stop offset="100%" stop-color="#F25E6A" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="4" fill="url(#netflixAvatarGrad)" />
+  <!-- Eyes -->
+  <circle cx="9.8" cy="11.2" r="2.3" fill="#FFFFFF" />
+  <circle cx="22.2" cy="11.2" r="2.3" fill="#FFFFFF" />
+  <!-- Smile -->
+  <path
+    d="M 9.8 17.2 Q 16 23.2 22.2 17.2"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="2.4"
+    stroke-linecap="round"
+  />
+</svg>
