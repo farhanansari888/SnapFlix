@@ -38,8 +38,10 @@ pnpm-debug.log*
 .env.local
 .env.development.local
 .env.test.local
-.env.production.local
 .env.keys
+deployment-env.txt
+*env*.txt
+*.env.txt
 
 # ==========================================
 # SECURITY: Certificates, keys, & credentials
