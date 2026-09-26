@@ -6,6 +6,41 @@ const PROTECTED_PATHS = env.PROTECTED_PATHS?.split(",") ?? [];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
+
+  // 1. Skip completely for static files, media, assets, brand, cdn-cgi, and API proxy routes (0ms overhead)
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/assets") ||
+    pathname.startsWith("/media") ||
+    pathname.startsWith("/brand") ||
+    pathname.startsWith("/cdn-cgi") ||
+    pathname.startsWith("/api/bingr") ||
+    pathname.startsWith("/api/bingr-clean") ||
+    /\.(?:svg|png|jpg|jpeg|gif|webp|woff|woff2|js|css)$/i.test(pathname)
+  ) {
+    return supabaseResponse;
+  }
+
+  // 2. High-performance auth check: Does the client have a Supabase auth token cookie?
+  const allCookies = request.cookies.getAll();
+  const hasAuthCookie = allCookies.some(
+    (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token")
+  );
+
+  const isProtectedPath = PROTECTED_PATHS.some((url) => pathname.startsWith(url));
+
+  // If no auth cookie exists (guest browsing)
+  if (!hasAuthCookie) {
+    // If guest tries to access protected path (/profile, /auth/reset-password), redirect to /auth instantly
+    if (isProtectedPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth";
+      return NextResponse.redirect(url);
+    }
+    // Guest accessing public page (/ , /movie/..., /tv/..., /watch/...) -> return immediately! 0ms latency, zero remote calls!
+    return supabaseResponse;
+  }
 
   // If Supabase URL is placeholder/invalid, skip auth check gracefully
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
@@ -41,10 +76,8 @@ export async function updateSession(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const pathname = request.nextUrl.pathname;
-
     // if user is not logged in and the current pathname is protected, redirect to login page
-    if (!user && PROTECTED_PATHS.some((url) => pathname.startsWith(url))) {
+    if (!user && isProtectedPath) {
       const url = request.nextUrl.clone();
       url.pathname = "/auth";
 

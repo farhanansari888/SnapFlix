@@ -107,12 +107,20 @@ export const getImageUrl = (
   type: "poster" | "backdrop" | "title" | "avatar" = "poster",
   fullSize?: boolean,
 ): string => {
-  const size = fullSize ? "original" : "w500";
+  const size = fullSize
+    ? type === "backdrop"
+      ? "w1280"
+      : "original"
+    : type === "avatar"
+      ? "w185"
+      : type === "backdrop"
+        ? "w780"
+        : "w500";
   const fallback =
     type === "poster"
       ? "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop&q=80"
       : type === "backdrop"
-        ? "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1920&auto=format&fit=crop&q=80"
+        ? "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1280&auto=format&fit=crop&q=80"
         : "";
   if (!path) return fallback;
   if (path.startsWith("http://") || path.startsWith("https://")) return path;

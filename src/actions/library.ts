@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 // Types
 type ContentType = "movie" | "tv";
@@ -262,6 +263,19 @@ export async function checkInWatchlist(
   type: ContentType,
 ): Promise<CheckWatchlistResponse> {
   try {
+    const cookieStore = await cookies();
+    const hasAuthToken = cookieStore
+      .getAll()
+      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+
+    if (!hasAuthToken) {
+      return {
+        success: false,
+        isInWatchlist: false,
+        error: "User not authenticated",
+      };
+    }
+
     const supabase = await createClient();
 
     // Get current user
@@ -320,6 +334,19 @@ export async function getWatchlist(
   limit: number = 20,
 ): Promise<WatchlistResponse> {
   try {
+    const cookieStore = await cookies();
+    const hasAuthToken = cookieStore
+      .getAll()
+      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+
+    if (!hasAuthToken) {
+      return {
+        success: false,
+        data: [],
+        error: "User not authenticated",
+      };
+    }
+
     const supabase = await createClient();
 
     // Get current user

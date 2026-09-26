@@ -8,7 +8,17 @@ import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 10, // 10 minutes cache
+      gcTime: 1000 * 60 * 60, // 1 hour memory persistence
+      refetchOnWindowFocus: false, // Prevents heavy reload spikes when switching windows/tabs
+      refetchOnReconnect: false,
+      retry: 1,
+    },
+  },
+});
 
 export default function Providers({ children }: PropsWithChildren) {
   const { push } = useRouter();

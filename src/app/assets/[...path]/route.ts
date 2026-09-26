@@ -9,6 +9,8 @@ export async function GET(
   const targetUrl = `https://bingr.one/assets/${path.join("/")}`;
 
   try {
+    const isEnvJs = fileName.startsWith("env-") && fileName.endsWith(".js");
+
     const res = await fetch(targetUrl, {
       headers: {
         "User-Agent":
@@ -16,7 +18,7 @@ export async function GET(
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         Accept: request.headers.get("accept") || "*/*",
       },
-      cache: "no-store",
+      ...(isEnvJs ? { cache: "no-store" } : { next: { revalidate: 86400 } }),
     });
 
     if (!res.ok) {
@@ -24,7 +26,7 @@ export async function GET(
     }
 
     // Intercept env config to disable ads and redirect API calls to our CORS-free proxy
-    if (fileName.startsWith("env-") && fileName.endsWith(".js")) {
+    if (isEnvJs) {
       let code = await res.text();
       code = code.replaceAll("https://api.bingr.one/api", "/api/bingr-api");
       code = code.replaceAll("`true`", "`false`");
@@ -45,6 +47,8 @@ export async function GET(
         ? "application/javascript"
         : targetUrl.endsWith(".css")
         ? "text/css"
+        : targetUrl.endsWith(".woff2")
+        ? "font/woff2"
         : "application/octet-stream");
 
     const arrayBuffer = await res.arrayBuffer();

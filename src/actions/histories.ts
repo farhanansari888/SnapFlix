@@ -6,6 +6,7 @@ import { ActionResponse } from "@/types";
 import { HistoryDetail } from "@/types/movie";
 import { mutateMovieTitle, mutateTvShowTitle } from "@/utils/movies";
 import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 
 export const syncHistory = async (
   data: UnifiedPlayerEventData,
@@ -108,6 +109,19 @@ export const syncHistory = async (
 
 export const getUserHistories = async (limit: number = 20): ActionResponse<HistoryDetail[]> => {
   try {
+    const cookieStore = await cookies();
+    const hasAuthToken = cookieStore
+      .getAll()
+      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+
+    if (!hasAuthToken) {
+      return {
+        success: false,
+        message: "User not authenticated",
+        data: [],
+      };
+    }
+
     const supabase = await createClient();
 
     // Get current user
@@ -153,6 +167,13 @@ export const getUserHistories = async (limit: number = 20): ActionResponse<Histo
 
 export const getMovieLastPosition = async (id: number): Promise<number> => {
   try {
+    const cookieStore = await cookies();
+    const hasAuthToken = cookieStore
+      .getAll()
+      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+
+    if (!hasAuthToken) return 0;
+
     const supabase = await createClient();
 
     // Get current user
@@ -190,6 +211,13 @@ export const getTvShowLastPosition = async (
   episode: number,
 ): Promise<number> => {
   try {
+    const cookieStore = await cookies();
+    const hasAuthToken = cookieStore
+      .getAll()
+      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+
+    if (!hasAuthToken) return 0;
+
     const supabase = await createClient();
 
     // Get current user
