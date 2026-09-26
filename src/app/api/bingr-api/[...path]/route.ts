@@ -7,16 +7,28 @@ async function handleProxy(
   const { path } = await paramsPromise;
   const pathString = path.join("/");
 
-  // Intercept internal user/auth endpoints that trigger 401/429 error spam in guest mode
+  // Intercept internal user/progress endpoints to return 204 No Content (silencing refresh loops)
   if (
     pathString.startsWith("me/") ||
     pathString === "me" ||
-    pathString.startsWith("auth/")
+    pathString === "auth/refresh"
   ) {
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD",
+        "Access-Control-Allow-Headers": "*",
+      },
+    });
+  }
+
+  // auth/me must return 401 so Bingr stays in guest mode and does NOT show "Who's watching?"
+  if (pathString === "auth/me") {
     return NextResponse.json(
-      { success: true, anonymous: true, user: null },
+      { code: 401, message: "Unauthorized" },
       {
-        status: 200,
+        status: 401,
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD",

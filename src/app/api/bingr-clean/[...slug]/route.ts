@@ -69,7 +69,7 @@ export async function GET(
           };
         })();
 
-        // Mock internal Bingr progress & auth fetch calls to avoid 401 console errors
+        // Intercept internal Bingr progress calls so it returns 204 and doesn't trigger auth refresh
         (function() {
           const originalFetch = window.fetch;
           window.fetch = async function(input, init) {
@@ -79,12 +79,11 @@ export async function GET(
               url.includes("/me/history") ||
               url.includes("/me/watchlist") ||
               url.includes("/me/continue") ||
-              url.includes("/auth/refresh") ||
-              url.includes("/auth/me")
+              url.includes("/auth/refresh")
             ) {
-              return new Response(JSON.stringify({ success: true, anonymous: true, user: null }), {
-                status: 200,
-                headers: { "Content-Type": "application/json" }
+              return new Response(null, {
+                status: 204,
+                headers: { "Access-Control-Allow-Origin": "*" }
               });
             }
             return originalFetch.apply(this, arguments);
