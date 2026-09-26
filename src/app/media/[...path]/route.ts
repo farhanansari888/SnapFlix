@@ -15,7 +15,7 @@ export async function GET(
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         Accept: request.headers.get("accept") || "*/*",
       },
-      cache: "force-cache",
+      cache: "no-store",
     });
 
     if (!res.ok) {
