@@ -39,6 +39,12 @@ export async function GET(
         try {
           history.replaceState(null, "", "/${path}");
           sessionStorage.setItem("bingr_ads_off", "1");
+          if (typeof navigator !== "undefined") {
+            navigator.vibrate = function() { return false; };
+          }
+          if (typeof Navigator !== "undefined" && Navigator.prototype) {
+            Navigator.prototype.vibrate = function() { return false; };
+          }
         } catch(e) {}
 
         (function() {

@@ -35,6 +35,16 @@ export default function AdShield() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // Neutralize unauthorized navigator.vibrate calls (prevents Chrome [Intervention] warning)
+    try {
+      if (typeof navigator !== "undefined") {
+        navigator.vibrate = () => false;
+      }
+      if (typeof Navigator !== "undefined" && Navigator.prototype) {
+        Navigator.prototype.vibrate = () => false;
+      }
+    } catch (e) {}
+
     // 1. Monkey-patch window.open to intercept ad popups and new-tab spam
     const originalOpen = window.open;
     window.open = function (url?: string | URL, target?: string, features?: string): Window | null {
