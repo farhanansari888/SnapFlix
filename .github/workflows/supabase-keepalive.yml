@@ -1,0 +1,36 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Runs every 3 days at 00:00 UTC (well within Supabase's 7-day inactivity pause window)
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Allows manual one-click trigger from GitHub Actions UI
+
+jobs:
+  keepalive:
+    name: Ping Supabase Project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database & Auth API
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::SUPABASE_URL or SUPABASE_KEY secret is not set in GitHub repository settings!"
+            echo "Please go to Settings > Secrets and variables > Actions and add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY."
+            exit 1
+          fi
+
+          echo "Pinging Supabase REST API..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${SUPABASE_URL}/rest/v1/" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}")
+
+          echo "Response HTTP Status: $STATUS"
+
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
+            echo "Success! Supabase is active and refreshed."
+          else
+            echo "Warning: Received unexpected status code $STATUS from Supabase."
+          fi
