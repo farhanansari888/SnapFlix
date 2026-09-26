@@ -266,7 +266,7 @@ export async function checkInWatchlist(
     const cookieStore = await cookies();
     const hasAuthToken = cookieStore
       .getAll()
-      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+      .some((c) => c.name.includes("auth-token") || c.name.startsWith("sb-"));
 
     if (!hasAuthToken) {
       return {
@@ -337,7 +337,7 @@ export async function getWatchlist(
     const cookieStore = await cookies();
     const hasAuthToken = cookieStore
       .getAll()
-      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+      .some((c) => c.name.includes("auth-token") || c.name.startsWith("sb-"));
 
     if (!hasAuthToken) {
       return {

@@ -25,7 +25,7 @@ export async function updateSession(request: NextRequest) {
   // 2. High-performance auth check: Does the client have a Supabase auth token cookie?
   const allCookies = request.cookies.getAll();
   const hasAuthCookie = allCookies.some(
-    (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token")
+    (c) => c.name.includes("auth-token") || c.name.startsWith("sb-")
   );
 
   const isProtectedPath = PROTECTED_PATHS.some((url) => pathname.startsWith(url));

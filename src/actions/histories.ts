@@ -112,7 +112,7 @@ export const getUserHistories = async (limit: number = 20): ActionResponse<Histo
     const cookieStore = await cookies();
     const hasAuthToken = cookieStore
       .getAll()
-      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+      .some((c) => c.name.includes("auth-token") || c.name.startsWith("sb-"));
 
     if (!hasAuthToken) {
       return {
@@ -170,7 +170,7 @@ export const getMovieLastPosition = async (id: number): Promise<number> => {
     const cookieStore = await cookies();
     const hasAuthToken = cookieStore
       .getAll()
-      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+      .some((c) => c.name.includes("auth-token") || c.name.startsWith("sb-"));
 
     if (!hasAuthToken) return 0;
 
@@ -214,7 +214,7 @@ export const getTvShowLastPosition = async (
     const cookieStore = await cookies();
     const hasAuthToken = cookieStore
       .getAll()
-      .some((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"));
+      .some((c) => c.name.includes("auth-token") || c.name.startsWith("sb-"));
 
     if (!hasAuthToken) return 0;
 

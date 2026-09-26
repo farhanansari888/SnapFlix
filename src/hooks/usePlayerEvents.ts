@@ -4,6 +4,8 @@ import { diff } from "@/utils/helpers";
 import { useDocumentVisibility } from "@mantine/hooks";
 import { useEffect, useRef, useState } from "react";
 import useSupabaseUser from "./useSupabaseUser";
+import { queryClient } from "@/app/providers";
+import { tmdb } from "@/api/tmdb";
 
 export type PlayerEventType = "play" | "pause" | "seeked" | "ended" | "timeupdate";
 
@@ -128,7 +130,7 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
   const eventDataRef = useRef<UnifiedPlayerEventData | null>(null);
 
   const syncToServer = async (data: UnifiedPlayerEventData, completed?: boolean) => {
-    if (!saveHistory || !user) return;
+    if (!saveHistory) return;
     if (diff(data.currentTime, lastCurrentTime) < 3 && !completed) return; // prevent spam
 
     const payload: UnifiedPlayerEventData = {
@@ -141,14 +143,81 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
 
     if (!payload.mediaId || payload.currentTime <= 0) return;
 
-    const { success, message } = await syncHistory(payload, completed);
-    if (success) setLastCurrentTime(data.currentTime);
-    else console.error("Save history failed:", message);
+    // 1. Always save to LocalStorage (works immediately for guests, offline, and instant display)
+    try {
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("snapflix_guest_history");
+        const list: any[] = stored ? JSON.parse(stored) : [];
+        const existingIdx = list.findIndex(
+          (item) =>
+            String(item.media_id) === String(payload.mediaId) &&
+            item.type === payload.mediaType &&
+            Number(item.season || 0) === Number(payload.season || 0) &&
+            Number(item.episode || 0) === Number(payload.episode || 0),
+        );
+
+        if (existingIdx >= 0) {
+          const item = list[existingIdx];
+          item.last_position = payload.currentTime;
+          if (payload.duration > 0) item.duration = payload.duration;
+          item.completed = completed || false;
+          item.updated_at = new Date().toISOString();
+          const updated = [item, ...list.filter((_, i) => i !== existingIdx)].slice(0, 20);
+          localStorage.setItem("snapflix_guest_history", JSON.stringify(updated));
+          queryClient.invalidateQueries({ queryKey: ["continue-watching"] });
+        } else {
+          // Fetch title/poster from TMDB
+          const fetchPromise =
+            payload.mediaType === "movie"
+              ? tmdb.movies.details(Number(payload.mediaId))
+              : tmdb.tvShows.details(Number(payload.mediaId));
+
+          fetchPromise
+            .then((res: any) => {
+              const newItem = {
+                id: Date.now(),
+                user_id: user?.id || "guest",
+                media_id: Number(payload.mediaId),
+                type: payload.mediaType,
+                season: Number(payload.season || 0),
+                episode: Number(payload.episode || 0),
+                duration: payload.duration || (res.runtime ? res.runtime * 60 : 7200),
+                last_position: payload.currentTime,
+                completed: completed || false,
+                adult: res.adult || false,
+                backdrop_path: res.backdrop_path || "",
+                poster_path: res.poster_path || "",
+                release_date: res.release_date || res.first_air_date || new Date().toISOString(),
+                title: res.title || res.name || `Title ${payload.mediaId}`,
+                vote_average: res.vote_average || 8.0,
+                updated_at: new Date().toISOString(),
+              };
+              const updated = [newItem, ...list].slice(0, 20);
+              localStorage.setItem("snapflix_guest_history", JSON.stringify(updated));
+              queryClient.invalidateQueries({ queryKey: ["continue-watching"] });
+            })
+            .catch(() => {});
+        }
+      }
+    } catch (e) {}
+
+    // 2. If logged in, also sync to Supabase
+    if (user) {
+      const { success, message } = await syncHistory(payload, completed);
+      if (success) {
+        setLastCurrentTime(data.currentTime);
+        queryClient.invalidateQueries({ queryKey: ["continue-watching"] });
+      } else {
+        console.error("Save history failed:", message);
+      }
+    } else {
+      setLastCurrentTime(data.currentTime);
+    }
   };
 
   // Sync on document tab change / visibility change
   useEffect(() => {
-    if (!saveHistory || !user) return;
+    if (!saveHistory) return;
     if (documentState === "visible") return;
     if (!eventDataRef.current) return;
     syncToServer(eventDataRef.current);
