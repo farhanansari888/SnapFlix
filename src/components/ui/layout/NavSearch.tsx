@@ -369,7 +369,7 @@ interface FloatingListItemProps {
 const FloatingListItem: React.FC<FloatingListItemProps> = ({ item, onClose }) => {
   const isTv = item.media_type === "tv";
   const detailHref = isTv ? `/tv/${item.id}` : `/movie/${item.id}`;
-  const playHref = isTv ? `/tv/${item.id}/1/1/player` : `/movie/${item.id}/player`;
+  const playHref = isTv ? `/watch/tv/${item.id}/1/1` : `/watch/movie/${item.id}`;
   const posterUrl = item.poster_path
     ? getImageUrl(item.poster_path, "poster")
     : item.backdrop_path

@@ -19,10 +19,10 @@ const ResumeCard: React.FC<ResumeCardProps> = ({ media }) => {
 
   const getRedirectLink = useCallback(() => {
     if (media.type === "movie") {
-      return `/movie/${media.media_id}/player`;
+      return `/watch/movie/${media.media_id}`;
     }
     if (media.type === "tv") {
-      return `/tv/${media.media_id}/${media.season}/${media.episode}/player`;
+      return `/watch/tv/${media.media_id}/${media.season}/${media.episode}`;
     }
     return "/";
   }, [media]);

@@ -152,7 +152,7 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
             const releaseDate = item.release_date || item.first_air_date;
             const releaseYear = releaseDate ? new Date(releaseDate).getFullYear() : 2025;
             const detailHref = isTv ? `/tv/${item.id}` : `/movie/${item.id}`;
-            const playHref = isTv ? `/tv/${item.id}/1/1/player` : `/movie/${item.id}/player`;
+            const playHref = isTv ? `/watch/tv/${item.id}/1/1` : `/watch/movie/${item.id}`;
 
             const voteAverage = item.vote_average || 8.2;
             const matchPercentage = Math.min(99, Math.round(voteAverage * 10 + 8));

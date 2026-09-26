@@ -92,7 +92,7 @@ const OverviewSection: React.FC<OverviewSectionProps> = ({ movie }) => {
             <div className="flex flex-wrap gap-2">
               <Button
                 as={Link}
-                href={`/movie/${movie.id}/player`}
+                href={`/watch/movie/${movie.id}`}
                 color="primary"
                 variant="shadow"
                 startContent={<FaCirclePlay size={22} />}

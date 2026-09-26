@@ -75,6 +75,7 @@ export const syncHistory = async (
           release_date: "release_date" in media ? media.release_date : media.first_air_date,
           title: "title" in media ? mutateMovieTitle(media) : mutateTvShowTitle(media),
           vote_average: media.vote_average,
+          updated_at: new Date().toISOString(),
         },
         {
           onConflict: "user_id,media_id,type,season,episode",

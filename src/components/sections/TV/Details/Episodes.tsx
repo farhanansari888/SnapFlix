@@ -114,7 +114,7 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
   const isNotReleased = !episode.air_date || new Date(episode.air_date) > new Date();
   const isOdd = order % 2 !== 0;
   const href = !isNotReleased
-    ? `/tv/${id}/${episode.season_number}/${episode.episode_number}/player`
+    ? `/watch/tv/${id}/${episode.season_number}/${episode.episode_number}`
     : undefined;
 
   return (
@@ -192,7 +192,7 @@ const EpisodeGridCard: React.FC<EpisodeCardProps> = ({ episode, id }) => {
   const imageUrl = getImageUrl(episode.still_path);
   const isNotReleased = !episode.air_date || new Date(episode.air_date) > new Date();
   const href = !isNotReleased
-    ? `/tv/${id}/${episode.season_number}/${episode.episode_number}/player`
+    ? `/watch/tv/${id}/${episode.season_number}/${episode.episode_number}`
     : undefined;
 
   return (

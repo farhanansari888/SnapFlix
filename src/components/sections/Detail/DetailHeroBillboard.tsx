@@ -24,7 +24,7 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
   const title = isTv ? mutateTvShowTitle(media) : mutateMovieTitle(media);
   const releaseDate = media.release_date || media.first_air_date;
   const releaseYear = releaseDate ? new Date(releaseDate).getFullYear() : 2025;
-  const playHref = isTv ? `/tv/${media.id}/1/1/player` : `/movie/${media.id}/player`;
+  const playHref = isTv ? `/watch/tv/${media.id}/1/1` : `/watch/movie/${media.id}`;
   const bgUrl = getImageUrl(media.backdrop_path || media.images?.backdrops?.[0]?.file_path, "backdrop", true);
 
   const voteAverage = media.vote_average || 8.2;

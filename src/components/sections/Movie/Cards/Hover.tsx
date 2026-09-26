@@ -112,7 +112,7 @@ const HoverPosterCard: React.FC<{ id: number; fullWidth?: boolean }> = ({ id, fu
             <div className="flex w-full justify-between gap-2 py-1">
               <Button
                 as={Link}
-                href={`/movie/${movie.id}/player`}
+                href={`/watch/movie/${movie.id}`}
                 fullWidth
                 color="primary"
                 variant="shadow"
