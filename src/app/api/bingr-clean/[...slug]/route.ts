@@ -63,6 +63,28 @@ export async function GET(
           };
         })();
 
+        // Mock internal Bingr progress & auth fetch calls to avoid 401 console errors
+        (function() {
+          const originalFetch = window.fetch;
+          window.fetch = async function(input, init) {
+            const url = typeof input === "string" ? input : (input && input.url ? input.url : "");
+            if (
+              url.includes("/me/progress") ||
+              url.includes("/me/history") ||
+              url.includes("/me/watchlist") ||
+              url.includes("/me/continue") ||
+              url.includes("/auth/refresh") ||
+              url.includes("/auth/me")
+            ) {
+              return new Response(JSON.stringify({ success: true, anonymous: true, user: null }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" }
+              });
+            }
+            return originalFetch.apply(this, arguments);
+          };
+        })();
+
         // Real-time video playback sync to parent SnapFlix window
         (function monitorVideo() {
           function attach() {

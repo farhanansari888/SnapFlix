@@ -5,8 +5,29 @@ async function handleProxy(
   paramsPromise: Promise<{ path: string[] }>,
 ) {
   const { path } = await paramsPromise;
+  const pathString = path.join("/");
+
+  // Intercept internal user/auth endpoints that trigger 401/429 error spam in guest mode
+  if (
+    pathString.startsWith("me/") ||
+    pathString === "me" ||
+    pathString.startsWith("auth/")
+  ) {
+    return NextResponse.json(
+      { success: true, anonymous: true, user: null },
+      {
+        status: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD",
+          "Access-Control-Allow-Headers": "*",
+        },
+      },
+    );
+  }
+
   const search = request.nextUrl.search;
-  const targetUrl = `https://api.bingr.one/api/${path.join("/")}${search}`;
+  const targetUrl = `https://api.bingr.one/api/${pathString}${search}`;
 
   try {
     let body: BodyInit | undefined = undefined;
