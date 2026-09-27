@@ -39,6 +39,21 @@ export async function GET(
         try {
           history.replaceState(null, "", "/${path}");
           sessionStorage.setItem("bingr_ads_off", "1");
+          // Purge any bogus 1:59 preview thumbnail tile cached streams
+          for (let i = sessionStorage.length - 1; i >= 0; i--) {
+            const key = sessionStorage.key(i);
+            if (key && key.startsWith("stream_")) {
+              const val = sessionStorage.getItem(key) || "";
+              if (
+                val.includes("rousav.tech") ||
+                val.includes("tiles.m3u8") ||
+                val.includes("/tiles/") ||
+                val.includes("bigtits.m3u8")
+              ) {
+                sessionStorage.removeItem(key);
+              }
+            }
+          }
           if (typeof navigator !== "undefined") {
             navigator.vibrate = function() { return false; };
           }

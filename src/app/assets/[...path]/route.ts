@@ -41,6 +41,24 @@ export async function GET(
       });
     }
 
+    const is3x2Js = fileName.startsWith("3x2-") && fileName.endsWith(".js");
+    if (is3x2Js) {
+      let code = await res.text();
+      // Prioritize high-reliability full-movie scrapers (Bastion, Corvus, Edmunds) before s40
+      code = code.replace(
+        "[{id:`s40`,name:`Aphelion`,cc:`GL`},{id:`s70`,name:`Polaris`,cc:`US`},{id:`s62`,name:`Bastion`,cc:`IN`}",
+        "[{id:`s62`,name:`Bastion`,cc:`IN`},{id:`s61`,name:`Corvus`,cc:`US`},{id:`s3`,name:`Edmunds`,cc:`US`},{id:`s70`,name:`Polaris`,cc:`US`},{id:`s40`,name:`Aphelion`,cc:`GL`}",
+      );
+
+      return new NextResponse(code, {
+        headers: {
+          "Content-Type": "application/javascript",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "public, max-age=86400",
+        },
+      });
+    }
+
     const contentType =
       res.headers.get("content-type") ||
       (targetUrl.endsWith(".js")
