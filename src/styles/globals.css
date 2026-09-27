@@ -139,6 +139,11 @@
     aspect-ratio: auto !important;
     z-index: 9999 !important;
   }
+  .player-responsive-video iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border: 0 !important;
+  }
   .player-responsive-details {
     display: none !important;
   }

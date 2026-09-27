@@ -35,10 +35,43 @@ export async function GET(
     // 2. Pre-inject bingr_ads_off, route sync, popup blocker, and video sync monitor
     const adBlockScript = `
       <base href="/">
+      <style id="snapflix-player-responsive">
+        html, body, #root {
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+          background: #000 !important;
+        }
+
+        /* In landscape mode on mobile, eliminate letterboxing so stream fills edge-to-edge */
+        @media (orientation: landscape) and (max-height: 600px) {
+          video {
+            object-fit: cover !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            position: absolute !important;
+            inset: 0 !important;
+          }
+          iframe {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            position: absolute !important;
+            inset: 0 !important;
+            border: 0 !important;
+          }
+        }
+      </style>
       <script>
         try {
           history.replaceState(null, "", "/${path}");
           sessionStorage.setItem("bingr_ads_off", "1");
+          localStorage.setItem("bingr_aspect_ratio", "fill");
           // Purge any bogus 1:59 preview thumbnail tile cached streams
           for (let i = sessionStorage.length - 1; i >= 0; i--) {
             const key = sessionStorage.key(i);
@@ -61,6 +94,26 @@ export async function GET(
             Navigator.prototype.vibrate = function() { return false; };
           }
         } catch(e) {}
+
+        // Double-tap to toggle zoom-to-fill (cover) vs fit (contain) on touch devices
+        (function initZoomToggle() {
+          let isCover = true;
+          let lastTap = 0;
+          document.addEventListener("touchend", function(e) {
+            const now = Date.now();
+            if (now - lastTap < 300) {
+              isCover = !isCover;
+              const vids = document.querySelectorAll("video");
+              vids.forEach(function(v) {
+                v.style.setProperty("object-fit", isCover ? "cover" : "contain", "important");
+              });
+              try {
+                localStorage.setItem("bingr_aspect_ratio", isCover ? "fill" : "fit");
+              } catch(err) {}
+            }
+            lastTap = now;
+          }, { passive: true });
+        })();
 
         (function() {
           const originalOpen = window.open;
