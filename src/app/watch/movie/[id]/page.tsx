@@ -130,8 +130,8 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full overflow-hidden bg-black select-none">
-      {/* 1. TOP VIDEO PLAYER WINDOW (36% height in Portrait, 100% in Landscape or Fullscreen) */}
+    <div className="flex flex-col lg:flex-row h-[100dvh] w-full overflow-hidden bg-black select-none">
+      {/* 1. TOP VIDEO PLAYER WINDOW (16:9 Aspect Video in Portrait, Fullscreen on Rotation, Cinema Mode on Desktop) */}
       <div
         onClick={resetTimer}
         onTouchStart={resetTimer}
@@ -139,7 +139,7 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
           "relative bg-black transition-all duration-300 overflow-hidden shrink-0 player-responsive-video",
           isFullscreen
             ? "fixed inset-0 w-full h-[100dvh] z-[9999]"
-            : "w-full h-[36dvh] min-h-[220px] max-h-[380px] z-30 shadow-2xl border-b border-white/10"
+            : "w-full aspect-video lg:aspect-auto lg:flex-1 lg:h-full z-30 shadow-2xl border-b lg:border-b-0 lg:border-r border-white/10"
         )}
       >
         {/* Pure Bingr Player */}
@@ -171,9 +171,9 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
         </div>
       </div>
 
-      {/* 2. BOTTOM DETAILS & RECOMMENDATIONS (YouTube-style window, visible in Portrait, hidden in Landscape) */}
+      {/* 2. DETAILS & RECOMMENDATIONS (Scrollable in Portrait, Sidebar on Desktop, hidden in Landscape) */}
       {!isFullscreen && (
-        <div className="flex-1 overflow-y-auto w-full bg-[#141414] text-white px-4 sm:px-6 py-4 space-y-5 pb-20 player-responsive-details">
+        <div className="flex-1 lg:flex-none lg:w-[380px] xl:w-[440px] 2xl:w-[480px] overflow-y-auto w-full bg-[#141414] text-white px-4 sm:px-6 py-4 space-y-5 pb-20 lg:pb-8 player-responsive-details">
           {/* Title & Metadata Header */}
           <div className="space-y-1.5 border-b border-white/10 pb-3">
             <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight line-clamp-1">

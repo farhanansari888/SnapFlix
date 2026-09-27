@@ -127,8 +127,8 @@
 }
 
 /* YouTube-style Responsive Player for Mobile & Tablet:
-   In Portrait: Player stays at the top (~36vh), with content scrollable below.
-   In Landscape (or when device is rotated): Player automatically expands to full screen. */
+   In Portrait: Player stays at the top with 16:9 aspect-video ratio, content scrollable below.
+   In Landscape (or when phone is rotated): Player automatically expands to full screen. */
 @media (orientation: landscape) and (max-height: 600px) {
   .player-responsive-video {
     position: fixed !important;
@@ -136,6 +136,7 @@
     width: 100vw !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
+    aspect-ratio: auto !important;
     z-index: 9999 !important;
   }
   .player-responsive-details {
