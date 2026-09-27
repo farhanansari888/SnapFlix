@@ -40,7 +40,11 @@ SnapFlix is a private, proprietary movies and TV shows streaming platform built 
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Confidentiality & License
+## Contributing
 
-This project is proprietary and confidential. Copyright © 2026 SnapFlix, Inc. All rights reserved.
-Unauthorized copying, reverse engineering, redistribution, or public deployment of this software is strictly prohibited.
+Contributions, issues, and feature requests are always welcome!  
+Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct, development setup, and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
