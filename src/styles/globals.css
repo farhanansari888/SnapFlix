@@ -125,3 +125,20 @@
 .netflix-glow-subtle {
   box-shadow: 0 0 10px rgba(229, 9, 20, 0.25);
 }
+
+/* YouTube-style Responsive Player for Mobile & Tablet:
+   In Portrait: Player stays at the top (~36vh), with content scrollable below.
+   In Landscape (or when device is rotated): Player automatically expands to full screen. */
+@media (orientation: landscape) and (max-height: 600px) {
+  .player-responsive-video {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    z-index: 9999 !important;
+  }
+  .player-responsive-details {
+    display: none !important;
+  }
+}

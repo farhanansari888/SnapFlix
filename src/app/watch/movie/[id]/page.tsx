@@ -5,24 +5,36 @@ import { siteConfig } from "@/config/site";
 import { Params } from "@/types";
 import { tmdb } from "@/api/tmdb";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Tooltip } from "@heroui/react";
-import { useDocumentTitle, useIdle } from "@mantine/hooks";
+import { Button, Chip } from "@heroui/react";
+import { useDocumentTitle } from "@mantine/hooks";
 import { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
+import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
+import { getImageUrl, movieDurationString } from "@/utils/movies";
+import { cn } from "@/utils/helpers";
+import BookmarkButton from "@/components/ui/button/BookmarkButton";
+import ShareButton from "@/components/ui/button/ShareButton";
+import type { SavedMovieDetails } from "@/types/movie";
+import Link from "next/link";
 
 const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
   const { id } = use(params);
   const router = useRouter();
 
-  // Fetch actual movie title from TMDB
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch movie details
   const { data: movieDetails } = useQuery({
-    queryKey: ["movie-details-title", id],
+    queryKey: ["movie-details", id],
     queryFn: async () => {
       try {
-        const res = await tmdb.movies.details(Number(id));
-        return res?.title || res?.original_title || null;
+        const res = await tmdb.movies.details(Number(id), ["recommendations", "similar"]);
+        return res || null;
       } catch (e) {
         return null;
       }
@@ -30,17 +42,19 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
     staleTime: 1000 * 60 * 60,
   });
 
-  const movieTitle = movieDetails || "Movie";
-
-  const [showControls, setShowControls] = useState(true);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const movieTitle = movieDetails?.title || movieDetails?.original_title || "Movie";
+  const releaseYear = movieDetails?.release_date
+    ? new Date(movieDetails.release_date).getFullYear()
+    : 2025;
+  const runtimeText = movieDetails?.runtime ? movieDurationString(movieDetails.runtime) : null;
+  const recommendations = (movieDetails?.recommendations?.results || movieDetails?.similar?.results || []).slice(0, 10);
 
   const resetTimer = useCallback(() => {
     setShowControls(true);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       setShowControls(false);
-    }, 2000);
+    }, 2500);
   }, []);
 
   const handleBack = useCallback(() => {
@@ -50,6 +64,35 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
       router.push(`/movie/${id}`);
     }
   }, [router, id]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().then(() => {
+        setIsFullscreen(true);
+        if ("orientation" in screen && "lock" in (screen as any).orientation) {
+          (screen as any).orientation.lock("landscape").catch(() => {});
+        }
+      }).catch(() => {
+        setIsFullscreen(true);
+      });
+    } else {
+      document.exitFullscreen?.().then(() => {
+        setIsFullscreen(false);
+      }).catch(() => {
+        setIsFullscreen(false);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFsChange);
+    };
+  }, []);
 
   useEffect(() => {
     resetTimer();
@@ -91,52 +134,194 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
     mediaType: "movie",
     saveHistory: true,
   });
+
   useDocumentTitle(`Watch ${movieTitle} | ${siteConfig.name}`);
 
-  return (
-    <div
-      onClick={resetTimer}
-      onTouchStart={resetTimer}
-      className="fixed inset-0 h-[100dvh] w-full min-h-[100dvh] overflow-hidden bg-black select-none z-50 touch-none overscroll-none"
-    >
-      {/* Top-Left Corner Hover / Tap Sensor */}
-      <div
-        onMouseMove={resetTimer}
-        onMouseEnter={resetTimer}
-        onTouchStart={resetTimer}
-        className="fixed top-0 left-0 w-32 h-20 z-[9998] pointer-events-auto bg-transparent"
-      />
+  const bookmarkData: SavedMovieDetails = {
+    type: "movie",
+    adult: movieDetails?.adult || false,
+    backdrop_path: movieDetails?.backdrop_path || "",
+    id: Number(id),
+    poster_path: movieDetails?.poster_path || "",
+    release_date: movieDetails?.release_date || "",
+    title: movieTitle,
+    vote_average: movieDetails?.vote_average || 8.0,
+    saved_date: new Date().toISOString(),
+  };
 
-      {/* Top-Left Floating Back Button */}
+  return (
+    <div className="flex flex-col h-[100dvh] w-full overflow-hidden bg-black select-none">
+      {/* 1. TOP VIDEO PLAYER WINDOW (36% height in Portrait, 100% in Landscape or Fullscreen) */}
       <div
-        onMouseMove={resetTimer}
-        onMouseEnter={resetTimer}
+        onClick={resetTimer}
         onTouchStart={resetTimer}
-        className={`fixed top-[max(1rem,env(safe-area-inset-top))] left-[max(1rem,env(safe-area-inset-left))] z-[9999] transition-all duration-300 ease-in-out ${
-          showControls
-            ? "opacity-100 pointer-events-auto translate-y-0"
-            : "opacity-0 pointer-events-none -translate-y-2"
-        }`}
+        className={cn(
+          "relative bg-black transition-all duration-300 overflow-hidden shrink-0 player-responsive-video",
+          isFullscreen
+            ? "fixed inset-0 w-full h-[100dvh] z-[9999]"
+            : "w-full h-[36dvh] min-h-[220px] max-h-[380px] z-30 shadow-2xl border-b border-white/10"
+        )}
       >
-        <button
-          onClick={handleBack}
-          tabIndex={showControls ? 0 : -1}
-          aria-label="Go back"
-          className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-black/80 hover:bg-black text-white/90 hover:text-white backdrop-blur-md border border-white/20 shadow-2xl transition-all duration-200 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black cursor-pointer group"
+        {/* Pure Bingr Player */}
+        <iframe
+          src={`/api/bingr-clean/watch/movie/${id}`}
+          className="absolute inset-0 h-full w-full border-0 bg-black"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
+          allowFullScreen
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+
+        {/* Top-Left Floating Back Button */}
+        <div
+          className={cn(
+            "absolute top-3 left-3 z-30 transition-all duration-300",
+            isFullscreen && !showControls
+              ? "opacity-0 pointer-events-none -translate-y-2"
+              : "opacity-100 pointer-events-auto translate-y-0"
+          )}
         >
-          <IoArrowBack size={20} className="transition-transform group-hover:-translate-x-1" />
-          <span className="text-sm font-medium pr-1">Back</span>
-        </button>
+          <button
+            onClick={handleBack}
+            aria-label="Go back"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-white/90 hover:text-white backdrop-blur-md border border-white/20 shadow-xl transition-all hover:scale-105 active:scale-95 text-xs font-semibold cursor-pointer group"
+          >
+            <IoArrowBack size={16} className="transition-transform group-hover:-translate-x-0.5" />
+            <span>Back</span>
+          </button>
+        </div>
+
+        {/* Fullscreen / Rotate Toggle Button (Bottom-Right of Video) */}
+        <div
+          className={cn(
+            "absolute bottom-3 right-3 z-30 transition-all duration-300",
+            isFullscreen && !showControls
+              ? "opacity-0 pointer-events-none translate-y-2"
+              : "opacity-100 pointer-events-auto translate-y-0"
+          )}
+        >
+          <button
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            className="p-2 rounded-lg bg-black/80 hover:bg-black text-white backdrop-blur-md border border-white/20 shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            {isFullscreen ? <MdFullscreenExit size={20} /> : <MdFullscreen size={20} />}
+          </button>
+        </div>
       </div>
 
-      {/* Pure Bingr Player (Ad-Free) */}
-      <iframe
-        src={`/api/bingr-clean/watch/movie/${id}`}
-        className="absolute inset-0 h-full w-full border-0 bg-black"
-        allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
-        allowFullScreen
-        referrerPolicy="no-referrer-when-downgrade"
-      />
+      {/* 2. BOTTOM DETAILS & RECOMMENDATIONS (YouTube-style window, visible in Portrait, hidden in Landscape) */}
+      {!isFullscreen && (
+        <div className="flex-1 overflow-y-auto w-full bg-[#141414] text-white px-4 sm:px-6 py-4 space-y-5 pb-20 player-responsive-details">
+          {/* Title & Metadata Header */}
+          <div className="space-y-1.5 border-b border-white/10 pb-3">
+            <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight line-clamp-1">
+              {movieTitle}
+            </h1>
+
+            {/* Quick Metadata Row */}
+            <div className="flex items-center gap-2 text-[11px] text-gray-400 pt-0.5">
+              {movieDetails?.vote_average && (
+                <span className="font-bold text-[#46D369]">
+                  {Math.round(movieDetails.vote_average * 10)}% Match
+                </span>
+              )}
+              <span>{releaseYear}</span>
+              <span className="border border-white/20 px-1 rounded-xs text-[10px] text-gray-300">
+                {movieDetails?.adult ? "18+" : "16+"}
+              </span>
+              {runtimeText && <span>{runtimeText}</span>}
+              <span className="border border-white/20 px-1 rounded-xs text-[10px] text-gray-300">
+                4K Ultra HD
+              </span>
+            </div>
+
+            {/* Genres */}
+            {movieDetails?.genres && movieDetails.genres.length > 0 && (
+              <div className="flex flex-wrap gap-1 pt-1">
+                {movieDetails.genres.slice(0, 3).map((g) => (
+                  <span
+                    key={g.id}
+                    className="text-[10px] text-gray-300 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full"
+                  >
+                    {g.name}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Actions Toolbar */}
+          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="scale-95 shrink-0">
+                <BookmarkButton data={bookmarkData} />
+              </div>
+
+              <div className="scale-95 shrink-0">
+                <ShareButton id={Number(id)} title={movieTitle} type="movie" />
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              variant="flat"
+              className="text-xs font-medium text-gray-300 border border-white/10 shrink-0"
+              startContent={<MdFullscreen size={16} />}
+              onPress={toggleFullscreen}
+            >
+              Rotate / Expand
+            </Button>
+          </div>
+
+          {/* Synopsis */}
+          {movieDetails?.overview && (
+            <div className="space-y-1.5 pt-1">
+              <h2 className="text-xs sm:text-sm font-bold text-gray-300">Synopsis</h2>
+              <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">
+                {movieDetails.overview}
+              </p>
+            </div>
+          )}
+
+          {/* Recommended / More Like This */}
+          {recommendations.length > 0 && (
+            <div className="space-y-3 border-t border-white/10 pt-4">
+              <h2 className="text-sm sm:text-base font-bold text-white">More Like This</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {recommendations.map((rec) => {
+                  const posterUrl = getImageUrl(rec.poster_path || rec.backdrop_path);
+                  return (
+                    <Link
+                      key={rec.id}
+                      href={`/watch/movie/${rec.id}`}
+                      className="group flex flex-col gap-1.5 rounded-lg overflow-hidden bg-white/[0.02] border border-white/5 p-1.5 hover:border-primary/50 transition-colors"
+                    >
+                      <div className="aspect-2/3 w-full rounded-md overflow-hidden bg-black/50 relative">
+                        <img
+                          src={posterUrl}
+                          alt={rec.title}
+                          className="size-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      </div>
+                      <h4 className="text-xs font-semibold text-white truncate group-hover:text-primary transition-colors">
+                        {rec.title}
+                      </h4>
+                      <div className="flex items-center justify-between text-[10px] text-gray-400">
+                        <span>{rec.release_date ? new Date(rec.release_date).getFullYear() : ""}</span>
+                        {rec.vote_average && (
+                          <span className="text-[#46D369] font-bold">
+                            ★ {rec.vote_average.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
