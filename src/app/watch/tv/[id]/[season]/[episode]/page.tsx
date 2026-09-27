@@ -1,8 +1,10 @@
 "use client";
 
-import { usePlayerEvents } from "@/hooks/usePlayerEvents";
+import { usePlayerEvents, type UnifiedPlayerEventData } from "@/hooks/usePlayerEvents";
 import { siteConfig } from "@/config/site";
 import { Params } from "@/types";
+import { tmdb } from "@/api/tmdb";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Tooltip } from "@heroui/react";
 import { useDocumentTitle, useIdle } from "@mantine/hooks";
 import { NextPage } from "next";
@@ -13,11 +15,35 @@ import { IoArrowBack } from "react-icons/io5";
 const WatchTvPage: NextPage<
   Params<{ id: string; season: string; episode: string }>
 > = ({ params }) => {
-  const { id, season, episode } = use(params);
+  const { id, season: initialSeason, episode: initialEpisode } = use(params);
   const router = useRouter();
+
+  const [currentSeason, setCurrentSeason] = useState(Number(initialSeason) || 1);
+  const [currentEpisode, setCurrentEpisode] = useState(Number(initialEpisode) || 1);
+
+  // Fetch actual series name from TMDB
+  const { data: tvDetails } = useQuery({
+    queryKey: ["tv-details-title", id],
+    queryFn: async () => {
+      try {
+        const res = await tmdb.tvShows.details(Number(id));
+        return res?.name || res?.original_name || null;
+      } catch (e) {
+        return null;
+      }
+    },
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const seriesName = tvDetails || "TV Show";
 
   const [showControls, setShowControls] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setCurrentSeason(Number(initialSeason) || 1);
+    setCurrentEpisode(Number(initialEpisode) || 1);
+  }, [initialSeason, initialEpisode]);
 
   const resetTimer = useCallback(() => {
     setShowControls(true);
@@ -41,13 +67,35 @@ const WatchTvPage: NextPage<
     };
   }, [resetTimer]);
 
+  const handleEpisodeChange = useCallback(
+    (data: UnifiedPlayerEventData) => {
+      const nextSeason = Number(data.season) || 1;
+      const nextEpisode = Number(data.episode) || 1;
+
+      if (nextSeason !== currentSeason || nextEpisode !== currentEpisode) {
+        setCurrentSeason(nextSeason);
+        setCurrentEpisode(nextEpisode);
+
+        // Update browser URL in address bar without reloading the iframe
+        const newUrl = `/watch/tv/${id}/${nextSeason}/${nextEpisode}`;
+        window.history.replaceState(window.history.state, "", newUrl);
+
+        // Update document title with actual series name
+        document.title = `Watch ${seriesName} S${nextSeason}E${nextEpisode} | ${siteConfig.name}`;
+      }
+    },
+    [id, currentSeason, currentEpisode, seriesName],
+  );
+
   usePlayerEvents({
     mediaId: id,
     mediaType: "tv",
     saveHistory: true,
-    metadata: { season: Number(season), episode: Number(episode) },
+    metadata: { season: currentSeason, episode: currentEpisode },
+    onEpisodeChange: handleEpisodeChange,
   });
-  useDocumentTitle(`Watch TV Show ${id} S${season}E${episode} | ${siteConfig.name}`);
+
+  useDocumentTitle(`Watch ${seriesName} S${currentSeason}E${currentEpisode} | ${siteConfig.name}`);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -88,7 +136,7 @@ const WatchTvPage: NextPage<
 
       {/* Pure Bingr Player (Ad-Free) */}
       <iframe
-        src={`/api/bingr-clean/watch/tv/${id}/${season}/${episode}`}
+        src={`/api/bingr-clean/watch/tv/${id}/${initialSeason}/${initialEpisode}`}
         className="absolute inset-0 h-full w-full border-0 bg-black"
         allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
         allowFullScreen

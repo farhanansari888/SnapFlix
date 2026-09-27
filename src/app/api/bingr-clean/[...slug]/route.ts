@@ -90,58 +90,179 @@ export async function GET(
           };
         })();
 
-        // Real-time video playback sync to parent SnapFlix window
-        (function monitorVideo() {
-          function attach() {
-            const video = document.querySelector("video");
-            if (!video) {
-              return setTimeout(attach, 400);
+        // Robust Route & Playback Synchronizer to parent SnapFlix window
+        (function syncManager() {
+          let currentMedia = {
+            mediaType: "${mediaType}",
+            mediaId: "${mediaId}",
+            season: ${mediaType === "movie" ? 0 : Number(season) || 1},
+            episode: ${mediaType === "movie" ? 0 : Number(episode) || 1}
+          };
+
+          function parseWatchPath(urlOrPath) {
+            if (!urlOrPath) return null;
+            let p = String(urlOrPath);
+            try {
+              if (p.startsWith("http")) {
+                p = new URL(p).pathname;
+              }
+            } catch (e) {}
+
+            const parts = p.split("/").filter(Boolean);
+            const idx = parts.indexOf("watch");
+            if (idx === -1) return null;
+
+            const type = parts[idx + 1];
+            const id = parts[idx + 2];
+            if (!type || !id) return null;
+
+            if (type === "tv") {
+              return {
+                mediaType: "tv",
+                mediaId: id,
+                season: parseInt(parts[idx + 3], 10) || 1,
+                episode: parseInt(parts[idx + 4], 10) || 1
+              };
             }
 
-            let lastSent = -1;
-            function send(event) {
-              try {
-                const ct = Math.floor(video.currentTime);
-                const dur = Math.floor(video.duration || 0);
-                if (isNaN(ct) || dur <= 0) return;
-                lastSent = ct;
-                window.parent.postMessage({
-                  type: "PLAYER_EVENT",
-                  data: {
-                    event: event || (video.paused ? "pause" : "timeupdate"),
-                    currentTime: ct,
-                    duration: dur,
-                    playing: !video.paused,
-                    mediaId: "${mediaId}",
-                    mediaType: "${mediaType}",
-                    season: Number("${season}"),
-                    episode: Number("${episode}")
-                  }
-                }, "*");
-              } catch(e) {}
+            if (type === "anime") {
+              return {
+                mediaType: "tv",
+                mediaId: id,
+                season: 1,
+                episode: parseInt(parts[idx + 3], 10) || 1
+              };
             }
 
-            video.addEventListener("timeupdate", () => {
-              if (Math.abs(video.currentTime - lastSent) >= 3) {
-                send("timeupdate");
-              }
-            });
-            video.addEventListener("play", () => send("play"));
-            video.addEventListener("pause", () => send("pause"));
-            video.addEventListener("ended", () => send("ended"));
-            video.addEventListener("seeked", () => send("seeked"));
+            if (type === "movie") {
+              return {
+                mediaType: "movie",
+                mediaId: id,
+                season: 0,
+                episode: 0
+              };
+            }
 
-            window.addEventListener("message", (e) => {
-              if (e.data && e.data.command === "getStatus") {
-                send("playerstatus");
-              }
-            });
+            return null;
           }
 
+          let activeVideo = null;
+          let lastSentTime = -1;
+
+          function notifyParent(eventName, customData) {
+            customData = customData || {};
+            try {
+              const ct = activeVideo ? Math.floor(activeVideo.currentTime || 0) : 0;
+              const dur = activeVideo ? Math.floor(activeVideo.duration || 0) : 0;
+              const isPaused = activeVideo ? activeVideo.paused : false;
+
+              window.parent.postMessage({
+                type: "PLAYER_EVENT",
+                data: {
+                  event: eventName,
+                  currentTime: customData.currentTime !== undefined ? customData.currentTime : ct,
+                  duration: customData.duration !== undefined ? customData.duration : dur,
+                  playing: customData.playing !== undefined ? customData.playing : !isPaused,
+                  mediaId: currentMedia.mediaId,
+                  mediaType: currentMedia.mediaType,
+                  season: currentMedia.season,
+                  episode: currentMedia.episode,
+                  ...customData
+                }
+              }, "*");
+            } catch(e) {}
+          }
+
+          function checkRoute(targetUrl) {
+            const parsed = parseWatchPath(targetUrl || window.location.pathname);
+            if (!parsed) return;
+
+            const changed =
+              parsed.mediaId !== currentMedia.mediaId ||
+              parsed.season !== currentMedia.season ||
+              parsed.episode !== currentMedia.episode ||
+              parsed.mediaType !== currentMedia.mediaType;
+
+            if (changed) {
+              console.log("[SnapFlix Sync] Episode transition detected:", currentMedia, "->", parsed);
+              currentMedia = parsed;
+              lastSentTime = -1;
+
+              // Immediately inform SnapFlix parent about episode change
+              notifyParent("episodechange", {
+                currentTime: 0,
+                playing: true
+              });
+            }
+          }
+
+          // Intercept pushState & replaceState (used by React Router inside Bingr)
+          const rawPushState = history.pushState;
+          history.pushState = function(state, unused, url) {
+            const ret = rawPushState.apply(this, arguments);
+            try { checkRoute(url || window.location.pathname); } catch(e) {}
+            return ret;
+          };
+
+          const rawReplaceState = history.replaceState;
+          history.replaceState = function(state, unused, url) {
+            const ret = rawReplaceState.apply(this, arguments);
+            try { checkRoute(url || window.location.pathname); } catch(e) {}
+            return ret;
+          };
+
+          window.addEventListener("popstate", () => checkRoute(window.location.pathname));
+          window.addEventListener("hashchange", () => checkRoute(window.location.pathname));
+
+          // Periodic route poll
+          setInterval(() => {
+            checkRoute(window.location.pathname);
+          }, 400);
+
+          function attachVideoListeners(video) {
+            if (!video) return;
+
+            const onTimeUpdate = () => {
+              const ct = Math.floor(video.currentTime || 0);
+              if (Math.abs(ct - lastSentTime) >= 3) {
+                lastSentTime = ct;
+                notifyParent("timeupdate");
+              }
+            };
+
+            const onPlay = () => notifyParent("play");
+            const onPause = () => notifyParent("pause");
+            const onEnded = () => notifyParent("ended", { completed: true });
+            const onSeeked = () => notifyParent("seeked");
+
+            video.addEventListener("timeupdate", onTimeUpdate);
+            video.addEventListener("play", onPlay);
+            video.addEventListener("pause", onPause);
+            video.addEventListener("ended", onEnded);
+            video.addEventListener("seeked", onSeeked);
+          }
+
+          function checkVideoElement() {
+            const video = document.querySelector("video");
+            if (video && video !== activeVideo) {
+              activeVideo = video;
+              lastSentTime = -1;
+              attachVideoListeners(video);
+            }
+          }
+
+          setInterval(checkVideoElement, 400);
+
+          window.addEventListener("message", (e) => {
+            if (e.data && e.data.command === "getStatus") {
+              notifyParent("playerstatus");
+            }
+          });
+
           if (document.readyState === "complete" || document.readyState === "interactive") {
-            attach();
+            checkVideoElement();
           } else {
-            window.addEventListener("DOMContentLoaded", attach);
+            window.addEventListener("DOMContentLoaded", checkVideoElement);
           }
         })();
       </script>

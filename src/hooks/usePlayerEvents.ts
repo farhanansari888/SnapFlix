@@ -7,7 +7,7 @@ import useSupabaseUser from "./useSupabaseUser";
 import { queryClient } from "@/app/providers";
 import { tmdb } from "@/api/tmdb";
 
-export type PlayerEventType = "play" | "pause" | "seeked" | "ended" | "timeupdate";
+export type PlayerEventType = "play" | "pause" | "seeked" | "ended" | "timeupdate" | "episodechange";
 
 export interface BasePlayerEventEnvelope<T> {
   type: "PLAYER_EVENT" | "MEDIA_DATA";
@@ -113,13 +113,14 @@ export interface UsePlayerEventsOptions {
   onSeeked?: (data: UnifiedPlayerEventData) => void;
   onEnded?: (data: UnifiedPlayerEventData) => void;
   onTimeUpdate?: (data: UnifiedPlayerEventData) => void;
+  onEpisodeChange?: (data: UnifiedPlayerEventData) => void;
 }
 
 export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
   const { data: user } = useSupabaseUser();
   const documentState = useDocumentVisibility();
 
-  const { mediaId, mediaType, metadata, saveHistory, onPlay, onPause, onSeeked, onEnded, onTimeUpdate } = options;
+  const { mediaId, mediaType, metadata, saveHistory, onPlay, onPause, onSeeked, onEnded, onTimeUpdate, onEpisodeChange } = options;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -128,20 +129,32 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
   const [lastCurrentTime, setLastCurrentTime] = useState(0);
 
   const eventDataRef = useRef<UnifiedPlayerEventData | null>(null);
+  const lastEpisodeKeyRef = useRef<string>("");
 
   const syncToServer = async (data: UnifiedPlayerEventData, completed?: boolean) => {
     if (!saveHistory) return;
-    if (diff(data.currentTime, lastCurrentTime) < 3 && !completed) return; // prevent spam
 
     const payload: UnifiedPlayerEventData = {
       ...data,
       mediaId: data.mediaId || mediaId || "",
       mediaType: data.mediaType || mediaType || "movie",
-      season: data.season || metadata?.season || 0,
-      episode: data.episode || metadata?.episode || 0,
+      season: data.season !== undefined ? data.season : (metadata?.season || 0),
+      episode: data.episode !== undefined ? data.episode : (metadata?.episode || 0),
     };
 
-    if (!payload.mediaId || payload.currentTime <= 0) return;
+    if (!payload.mediaId) return;
+
+    const currentKey = `${payload.mediaType}_${payload.mediaId}_${payload.season || 0}_${payload.episode || 0}`;
+    const isNewEpisode = lastEpisodeKeyRef.current !== "" && lastEpisodeKeyRef.current !== currentKey;
+    if (lastEpisodeKeyRef.current !== currentKey) {
+      lastEpisodeKeyRef.current = currentKey;
+      setLastCurrentTime(0);
+    }
+
+    if (!completed && !isNewEpisode && diff(data.currentTime, lastCurrentTime) < 3) return; // prevent spam
+
+    // Prevent saving if 0 time unless completed or new episode
+    if (!isNewEpisode && !completed && payload.currentTime <= 0) return;
 
     // 1. Always save to LocalStorage (works immediately for guests, offline, and instant display)
     try {
@@ -282,8 +295,8 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
           duration: Number(d.duration || 0),
           mediaId: d.mediaId || mediaId || "",
           mediaType: d.mediaType || mediaType || "movie",
-          season: d.season || metadata?.season || 0,
-          episode: d.episode || metadata?.episode || 0,
+          season: d.season !== undefined ? Number(d.season) : (metadata?.season || 0),
+          episode: d.episode !== undefined ? Number(d.episode) : (metadata?.episode || 0),
         };
       } else {
         const adapter = Object.values(playerAdapters).find((a) => a.origin === event.origin);
@@ -297,9 +310,29 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
       eventDataRef.current = parsed;
       setLastEvent(parsed.event);
 
+      const parsedSeason = parsed.season ?? metadata?.season ?? 0;
+      const parsedEpisode = parsed.episode ?? metadata?.episode ?? 0;
+      const prevSeason = metadata?.season ?? 0;
+      const prevEpisode = metadata?.episode ?? 0;
+
+      const isEpisodeChange =
+        parsed.event === "episodechange" ||
+        (parsed.mediaType === "tv" &&
+          parsedEpisode > 0 &&
+          (parsedSeason !== prevSeason || parsedEpisode !== prevEpisode));
+
+      if (isEpisodeChange) {
+        onEpisodeChange?.(parsed);
+      }
+
       switch (parsed.event) {
+        case "episodechange":
+          setIsPlaying(true);
+          syncToServer(parsed);
+          break;
         case "play":
           setIsPlaying(true);
+          syncToServer(parsed);
           onPlay?.(parsed);
           break;
         case "pause":
@@ -335,7 +368,7 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
       window.removeEventListener("message", handleMessage);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [mediaId, mediaType, metadata?.season, metadata?.episode, user, saveHistory]);
+  }, [mediaId, mediaType, metadata?.season, metadata?.episode, user, saveHistory, onEpisodeChange]);
 
   return { isPlaying, currentTime, duration, lastEvent };
 }

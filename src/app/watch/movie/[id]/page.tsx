@@ -3,6 +3,8 @@
 import { usePlayerEvents } from "@/hooks/usePlayerEvents";
 import { siteConfig } from "@/config/site";
 import { Params } from "@/types";
+import { tmdb } from "@/api/tmdb";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Tooltip } from "@heroui/react";
 import { useDocumentTitle, useIdle } from "@mantine/hooks";
 import { NextPage } from "next";
@@ -13,6 +15,22 @@ import { IoArrowBack } from "react-icons/io5";
 const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
   const { id } = use(params);
   const router = useRouter();
+
+  // Fetch actual movie title from TMDB
+  const { data: movieDetails } = useQuery({
+    queryKey: ["movie-details-title", id],
+    queryFn: async () => {
+      try {
+        const res = await tmdb.movies.details(Number(id));
+        return res?.title || res?.original_title || null;
+      } catch (e) {
+        return null;
+      }
+    },
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const movieTitle = movieDetails || "Movie";
 
   const [showControls, setShowControls] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -44,7 +62,7 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
     mediaType: "movie",
     saveHistory: true,
   });
-  useDocumentTitle(`Watch Movie ${id} | ${siteConfig.name}`);
+  useDocumentTitle(`Watch ${movieTitle} | ${siteConfig.name}`);
 
   const handleBack = () => {
     if (window.history.length > 1) {

@@ -47,7 +47,16 @@ const ContinueWatching: React.FC = () => {
         (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
       );
 
-      return combined;
+      // 5. Deduplicate by show so each series displays its most recently watched episode
+      const showMap = new Map<string, HistoryDetail>();
+      for (const item of combined) {
+        const key = `${item.type}_${item.media_id}`;
+        if (!showMap.has(key)) {
+          showMap.set(key, item);
+        }
+      }
+
+      return Array.from(showMap.values());
     },
     queryKey: ["continue-watching"],
     staleTime: 0,

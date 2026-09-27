@@ -1,8 +1,10 @@
 "use client";
 
-import { usePlayerEvents } from "@/hooks/usePlayerEvents";
+import { usePlayerEvents, type UnifiedPlayerEventData } from "@/hooks/usePlayerEvents";
 import { siteConfig } from "@/config/site";
 import { Params } from "@/types";
+import { tmdb } from "@/api/tmdb";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Tooltip } from "@heroui/react";
 import { useDocumentTitle, useIdle } from "@mantine/hooks";
 import { NextPage } from "next";
@@ -11,11 +13,33 @@ import { use, useCallback, useEffect, useRef, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
 
 const WatchAnimePage: NextPage<Params<{ id: string; episode: string }>> = ({ params }) => {
-  const { id, episode } = use(params);
+  const { id, episode: initialEpisode } = use(params);
   const router = useRouter();
+
+  const [currentEpisode, setCurrentEpisode] = useState(Number(initialEpisode) || 1);
+
+  // Fetch actual anime name from TMDB
+  const { data: animeDetails } = useQuery({
+    queryKey: ["anime-details-title", id],
+    queryFn: async () => {
+      try {
+        const res = await tmdb.tvShows.details(Number(id));
+        return res?.name || res?.original_name || null;
+      } catch (e) {
+        return null;
+      }
+    },
+    staleTime: 1000 * 60 * 60,
+  });
+
+  const animeTitle = animeDetails || "Anime";
 
   const [showControls, setShowControls] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    setCurrentEpisode(Number(initialEpisode) || 1);
+  }, [initialEpisode]);
 
   const resetTimer = useCallback(() => {
     setShowControls(true);
@@ -39,13 +63,31 @@ const WatchAnimePage: NextPage<Params<{ id: string; episode: string }>> = ({ par
     };
   }, [resetTimer]);
 
+  const handleEpisodeChange = useCallback(
+    (data: UnifiedPlayerEventData) => {
+      const nextEpisode = Number(data.episode) || 1;
+
+      if (nextEpisode !== currentEpisode) {
+        setCurrentEpisode(nextEpisode);
+
+        const newUrl = `/watch/anime/${id}/${nextEpisode}`;
+        window.history.replaceState(window.history.state, "", newUrl);
+
+        document.title = `Watch ${animeTitle} Ep ${nextEpisode} | ${siteConfig.name}`;
+      }
+    },
+    [id, currentEpisode, animeTitle],
+  );
+
   usePlayerEvents({
     mediaId: id,
     mediaType: "tv",
     saveHistory: true,
-    metadata: { season: 1, episode: Number(episode) },
+    metadata: { season: 1, episode: currentEpisode },
+    onEpisodeChange: handleEpisodeChange,
   });
-  useDocumentTitle(`Watch Anime ${id} Ep ${episode} | ${siteConfig.name}`);
+
+  useDocumentTitle(`Watch ${animeTitle} Ep ${currentEpisode} | ${siteConfig.name}`);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -85,7 +127,7 @@ const WatchAnimePage: NextPage<Params<{ id: string; episode: string }>> = ({ par
       </div>
 
       <iframe
-        src={`/api/bingr-clean/watch/anime/${id}/${episode}`}
+        src={`/api/bingr-clean/watch/anime/${id}/${initialEpisode}`}
         className="absolute inset-0 h-full w-full border-0 bg-black"
         allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer"
         allowFullScreen
