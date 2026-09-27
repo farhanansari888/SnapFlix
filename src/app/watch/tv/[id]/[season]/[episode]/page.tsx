@@ -11,7 +11,6 @@ import { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
-import { MdFullscreen, MdFullscreenExit } from "react-icons/md";
 import { FaPlay, FaForwardStep } from "react-icons/fa6";
 import { getImageUrl } from "@/utils/movies";
 import { cn } from "@/utils/helpers";
@@ -100,25 +99,6 @@ const WatchTvPage: NextPage<
       router.push(`/tv/${id}`);
     }
   }, [router, id]);
-
-  const toggleFullscreen = useCallback(() => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().then(() => {
-        setIsFullscreen(true);
-        if ("orientation" in screen && "lock" in (screen as any).orientation) {
-          (screen as any).orientation.lock("landscape").catch(() => {});
-        }
-      }).catch(() => {
-        setIsFullscreen(true);
-      });
-    } else {
-      document.exitFullscreen?.().then(() => {
-        setIsFullscreen(false);
-      }).catch(() => {
-        setIsFullscreen(false);
-      });
-    }
-  }, []);
 
   useEffect(() => {
     const handleFsChange = () => {
@@ -264,24 +244,6 @@ const WatchTvPage: NextPage<
             <span>Back</span>
           </button>
         </div>
-
-        {/* Fullscreen / Rotate Toggle Button (Bottom-Right of Video) */}
-        <div
-          className={cn(
-            "absolute bottom-3 right-3 z-30 transition-all duration-300",
-            isFullscreen && !showControls
-              ? "opacity-0 pointer-events-none translate-y-2"
-              : "opacity-100 pointer-events-auto translate-y-0"
-          )}
-        >
-          <button
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-            className="p-2 rounded-lg bg-black/80 hover:bg-black text-white backdrop-blur-md border border-white/20 shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            {isFullscreen ? <MdFullscreenExit size={20} /> : <MdFullscreen size={20} />}
-          </button>
-        </div>
       </div>
 
       {/* 2. BOTTOM DETAILS & EPISODES (YouTube-style window, visible in Portrait, hidden in Landscape) */}
@@ -342,16 +304,6 @@ const WatchTvPage: NextPage<
                 <ShareButton id={Number(id)} title={seriesName} type="tv" />
               </div>
             </div>
-
-            <Button
-              size="sm"
-              variant="flat"
-              className="text-xs font-medium text-gray-300 border border-white/10 shrink-0"
-              startContent={<MdFullscreen size={16} />}
-              onPress={toggleFullscreen}
-            >
-              Rotate / Expand
-            </Button>
           </div>
 
           {/* Season Selector & Episodes List */}
