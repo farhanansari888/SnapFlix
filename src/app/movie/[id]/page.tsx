@@ -84,7 +84,7 @@ const MovieDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
         <DetailHeroBillboard media={movie} type="movie" />
 
         {/* Details & Recommended Rails */}
-        <div className="mx-auto max-w-7xl w-full px-4 md:px-12 flex flex-col gap-12 pb-16">
+        <div className="mx-auto max-w-7xl 2xl:max-w-[1800px] w-full px-4 md:px-12 flex flex-col gap-12 pb-16">
           <CastsSection casts={movie.credits.cast as Cast[]} />
           <PhotosSection images={movie.images.backdrops as Image[]} />
           <RelatedSection movie={movie} />

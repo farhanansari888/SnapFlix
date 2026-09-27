@@ -109,7 +109,7 @@ const TVShowDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
         />
 
         {/* Episodes, Cast, Photos & Related Rails */}
-        <div className="mx-auto max-w-7xl w-full px-4 md:px-12 flex flex-col gap-12 pb-16">
+        <div className="mx-auto max-w-7xl 2xl:max-w-[1800px] w-full px-4 md:px-12 flex flex-col gap-12 pb-16">
           <TvShowsSeasonsSelection ref={targetRef} id={id} seasons={tv.seasons} />
           <TvShowCastsSection casts={tv.credits.cast} />
           <PhotosSection images={tv.images.backdrops} type="tv" />

@@ -103,7 +103,7 @@
 }
 
 @utility movie-grid {
-  @apply grid size-full max-w-7xl grid-cols-2 justify-center gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-5 xl:grid-cols-6;
+  @apply grid w-full max-w-7xl 2xl:max-w-[1800px] mx-auto grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 justify-center gap-3 sm:gap-4 md:gap-5;
 }
 
 /* Netflix stylized ranking numbers for Top 10 row */

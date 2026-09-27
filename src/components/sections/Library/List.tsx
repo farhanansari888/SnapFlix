@@ -17,6 +17,8 @@ import TvShowPosterCard from "../TV/Cards/Poster";
 import { getLoadingLabel } from "@/utils/movies";
 import { ITEMS_PER_PAGE } from "@/utils/constants";
 import ConfirmationModal from "@/components/ui/overlay/ConfirmationModal";
+import Link from "next/link";
+import { TbFolder } from "react-icons/tb";
 
 type SortOption = "title" | "release_date" | "vote_average" | "created_at";
 type FilterType = "movie" | "tv" | "all";
@@ -132,35 +134,96 @@ const LibraryList = () => {
 
   return (
     <>
-      <div className="relative flex flex-col items-center justify-center gap-10">
-        <div className="flex w-full flex-col items-center justify-center gap-2">
-          <ContentTypeSelection className="justify-center" />
-          <Select
-            label="Sort by"
-            size="sm"
-            placeholder="Select sort"
-            className="max-w-xs p-4"
-            selectedKeys={[sortOption]}
-            onChange={({ target }) => setSortOption(target.value as SortOption)}
-          >
-            {SORT_OPTIONS.map(({ key, label }) => (
-              <SelectItem key={key}>{label}</SelectItem>
-            ))}
-          </Select>
+      <div className="relative flex flex-col gap-6 md:gap-8">
+        {/* Header with Title, Count badge, and Subtitle */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-white/10">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                My Library
+              </h1>
+              {hasItems && (
+                <span className="text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
+                  {sortedWatchlist.length} {sortedWatchlist.length === 1 ? "item" : "items"}
+                </span>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm text-gray-400 mt-1">
+              Your saved {content === "movie" ? "movies" : "TV shows"} and custom watchlist
+            </p>
+          </div>
+
+          {/* Action buttons (Clear button on tablet/desktop/TV) */}
           {hasItems && (
-            <Button
-              startContent={<Trash />}
-              color="danger"
-              variant="shadow"
-              onPress={() => {
-                if (user) open();
-              }}
-              isLoading={clearWatchlistMutation.isPending || isPending}
-            >
-              Clear {content === "movie" ? "Movies" : "TV Shows"} from Watchlist
-            </Button>
+            <div className="hidden sm:flex items-center gap-2">
+              <Button
+                startContent={<Trash />}
+                color="danger"
+                variant="flat"
+                size="sm"
+                className="font-medium text-xs md:text-sm"
+                onPress={() => {
+                  if (user) open();
+                }}
+                isLoading={clearWatchlistMutation.isPending || isPending}
+              >
+                Clear Watchlist
+              </Button>
+            </div>
           )}
         </div>
+
+        {/* Responsive Toolbar: Switcher & Sort Controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 bg-[#181818]/60 p-2 sm:p-3 rounded-2xl border border-white/5 backdrop-blur-sm">
+          {/* Switcher */}
+          <div className="flex justify-center sm:justify-start">
+            <ContentTypeSelection />
+          </div>
+
+          {/* Sort & Mobile Clear Controls */}
+          <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
+            <div className="w-full sm:w-44">
+              <Select
+                aria-label="Sort by"
+                placeholder="Sort by"
+                size="sm"
+                selectedKeys={[sortOption]}
+                className="w-full"
+                classNames={{
+                  trigger: "bg-[#202020] border border-white/10 hover:border-white/20 min-h-10 h-10",
+                  value: "text-xs sm:text-sm font-medium",
+                }}
+                onChange={({ target }) => {
+                  if (target.value) setSortOption(target.value as SortOption);
+                }}
+              >
+                {SORT_OPTIONS.map(({ key, label }) => (
+                  <SelectItem key={key}>{label}</SelectItem>
+                ))}
+              </Select>
+            </div>
+
+            {hasItems && (
+              <div className="sm:hidden shrink-0">
+                <Button
+                  isIconOnly
+                  aria-label="Clear Watchlist"
+                  color="danger"
+                  variant="flat"
+                  size="md"
+                  className="min-h-10 min-w-10 h-10 w-10"
+                  onPress={() => {
+                    if (user) open();
+                  }}
+                  isLoading={clearWatchlistMutation.isPending || isPending}
+                >
+                  <Trash />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
         {status === "pending" ? (
           <Spinner
             size="lg"
@@ -227,10 +290,26 @@ const LibraryList = () => {
             </div>
           </>
         ) : (
-          <div className="flex h-[30vh] items-center justify-center">
-            <p className="text-default-500">
-              No {content === "movie" ? "movies" : "TV shows"} in your watchlist yet.
+          <div className="flex flex-col items-center justify-center min-h-[35vh] sm:min-h-[40vh] gap-4 text-center px-4 py-12 rounded-2xl bg-white/[0.02] border border-white/5 mt-4">
+            <div className="size-16 rounded-full bg-white/5 flex items-center justify-center text-gray-500 mb-1">
+              <TbFolder className="size-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-white">
+              No {content === "movie" ? "movies" : "TV shows"} saved yet
+            </h3>
+            <p className="text-gray-400 text-xs sm:text-sm max-w-sm">
+              Discover and add {content === "movie" ? "movies" : "TV series"} to your personal watchlist to watch them anytime.
             </p>
+            <Button
+              as={Link}
+              href="/discover"
+              color="primary"
+              variant="shadow"
+              size="md"
+              className="mt-2 font-medium"
+            >
+              Browse Catalog
+            </Button>
           </div>
         )}
       </div>

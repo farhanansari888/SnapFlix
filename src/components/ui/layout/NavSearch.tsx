@@ -265,7 +265,7 @@ const NavSearch = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute top-full right-0 mt-2 w-[310px] sm:w-[360px] md:w-[400px] bg-[#161616]/95 backdrop-blur-2xl border border-white/15 rounded-xl shadow-[0_16px_50px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col z-50 text-white"
+            className="absolute top-full right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[360px] md:w-[400px] max-w-[400px] bg-[#161616]/95 backdrop-blur-2xl border border-white/15 rounded-xl shadow-[0_16px_50px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col z-50 text-white"
           >
             {/* Header: Category Filter Pills & Results Count */}
             <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 bg-black/40 border-b border-white/10">
