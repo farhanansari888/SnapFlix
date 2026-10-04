@@ -32,12 +32,12 @@ const ResumeCard: React.FC<ResumeCardProps> = ({ media }) => {
       <Link href={getRedirectLink()}>
         <div
           className={cn(
-            "group motion-preset-focus relative aspect-video overflow-hidden rounded-lg text-white",
+            "group motion-preset-focus relative aspect-video overflow-hidden rounded-xl text-white ring-1 ring-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.4)] transition hover:ring-[#E50914]/70",
           )}
         >
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="z-10 flex h-12 w-12 items-center justify-center rounded-full bg-black/35 opacity-0 backdrop-blur-xs transition-opacity group-hover:opacity-100">
-              <PlayOutline className="h-6 w-6 text-white" />
+            <div className="z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+              <PlayOutline className="h-6 w-6 text-black" />
             </div>
           </div>
           {media.type === "tv" && (

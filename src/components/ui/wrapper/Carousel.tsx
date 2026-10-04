@@ -51,44 +51,36 @@ const Carousel = ({
     >
       <div
         {...props}
-        className={cn(styles.wrapper, classNames?.wrapper, {
+        className={cn("group/rail", styles.wrapper, classNames?.wrapper, {
           "relative flex w-full flex-col justify-center": !isButtonDisabled,
         })}
       >
         {!isButtonDisabled && (
           <>
-            <div
-              className={cn("absolute z-10 h-full", {
-                "hidden md:block": autoHideButton,
-              })}
-            >
-              <IconButton
-                onPress={c.scrollPrev}
-                size="lg"
-                radius="none"
-                disableRipple
-                icon={<ChevronLeft size={24} />}
-                className={cn("h-full bg-transparent", {
-                  hidden: !c.canScrollPrev,
-                })}
-              />
-            </div>
-            <div
-              className={cn("absolute z-10 h-full place-self-end", {
-                "hidden md:block": autoHideButton,
-              })}
-            >
-              <IconButton
-                onPress={c.scrollNext}
-                size="lg"
-                radius="none"
-                disableRipple
-                icon={<ChevronRight size={24} />}
-                className={cn("h-full bg-transparent", {
-                  hidden: !c.canScrollNext,
-                })}
-              />
-            </div>
+            <IconButton
+              onPress={c.scrollPrev}
+              aria-label="Scroll previous"
+              radius="full"
+              disableRipple
+              icon={<ChevronLeft size={22} />}
+              className={cn(
+                "absolute top-1/2 left-1 z-20 hidden size-11 min-w-11 -translate-y-1/2 border border-white/15 bg-black/65 text-white shadow-xl backdrop-blur-md transition md:flex",
+                autoHideButton && "opacity-0 group-hover/rail:opacity-100",
+                !c.canScrollPrev && "!hidden",
+              )}
+            />
+            <IconButton
+              onPress={c.scrollNext}
+              aria-label="Scroll next"
+              radius="full"
+              disableRipple
+              icon={<ChevronRight size={22} />}
+              className={cn(
+                "absolute top-1/2 right-1 z-20 hidden size-11 min-w-11 -translate-y-1/2 border border-white/15 bg-black/65 text-white shadow-xl backdrop-blur-md transition md:flex",
+                autoHideButton && "opacity-0 group-hover/rail:opacity-100",
+                !c.canScrollNext && "!hidden",
+              )}
+            />
           </>
         )}
         <div className={cn(styles.viewport, classNames?.viewport)} ref={c.emblaRef}>

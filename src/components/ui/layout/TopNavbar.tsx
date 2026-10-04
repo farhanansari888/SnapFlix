@@ -25,6 +25,7 @@ const TopNavbar = () => {
   if (auth || player) return null;
 
   const isHome = pathName === "/";
+  const isMediaRoute = pathName.startsWith("/movie/") || pathName.startsWith("/tv/");
 
   const navLinks = [
     { label: "Home", href: "/", active: isHome && !currentContent },
@@ -44,15 +45,15 @@ const TopNavbar = () => {
         wrapper: "px-4 md:px-12 h-16 md:h-18 max-w-full",
       }}
       className={cn(
-        "top-0 left-0 right-0 fixed z-50 transition-colors duration-400 ease-in-out",
+        "top-0 left-0 right-0 fixed z-50 transition-all duration-400 ease-in-out",
         isScrolled
-          ? "bg-[#141414]/75 backdrop-blur-md shadow-2xl border-b border-white/5"
-          : "bg-transparent",
+          ? "bg-[#0c0c0e]/78 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl border-b border-white/8"
+          : "bg-linear-to-b from-black/70 via-black/25 to-transparent",
       )}
     >
       {/* Left: Brand Logo */}
       <NavbarBrand className="grow-0 basis-auto shrink-0">
-        {isHome || pathName === "/discover" || pathName === "/library" || pathName === "/about" ? (
+        {!isMediaRoute ? (
           <BrandLogo size="md" />
         ) : (
           <BackButton href={tv ? "/?content=tv" : "/"} />
@@ -61,16 +62,17 @@ const TopNavbar = () => {
 
       {/* Center: Netflix Translucent Cylinder Nav Links */}
       <NavbarContent justify="center" className="hidden md:flex grow">
-        <nav className="flex items-center gap-2 lg:gap-3">
+        <nav className="flex items-center gap-0.5 rounded-full border border-white/10 bg-black/40 p-1 shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
+              aria-current={link.active ? "page" : undefined}
               className={cn(
-                "rounded-full px-4 lg:px-5 py-1.5 text-xs sm:text-sm font-semibold tracking-wide transition-all duration-200 backdrop-blur-md select-none",
+                "rounded-full px-3.5 lg:px-4 py-1.5 text-xs lg:text-sm font-semibold tracking-wide transition-all duration-200 select-none",
                 link.active
-                  ? "bg-white/25 text-white font-bold border border-white/25 shadow-xs"
-                  : "bg-white/10 hover:bg-white/20 text-[#D8D8D8] hover:text-white border border-white/10 hover:border-white/20",
+                  ? "bg-[#E50914] text-white shadow-[0_6px_16px_rgba(229,9,20,0.4)]"
+                  : "text-white/75 hover:bg-white/10 hover:text-white",
               )}
             >
               {link.label}

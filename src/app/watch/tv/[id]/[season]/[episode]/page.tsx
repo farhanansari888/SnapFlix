@@ -248,7 +248,7 @@ const WatchTvPage: NextPage<
 
       {/* 2. DETAILS & EPISODES (Scrollable in Portrait, Sidebar on Desktop, hidden in Landscape) */}
       {!isFullscreen && (
-        <div className="flex-1 lg:flex-none lg:w-[380px] xl:w-[440px] 2xl:w-[480px] overflow-y-auto w-full bg-[#141414] text-white px-4 sm:px-6 py-4 space-y-5 pb-20 lg:pb-8 player-responsive-details">
+        <div className="flex-1 lg:flex-none lg:w-[380px] xl:w-[440px] 2xl:w-[480px] overflow-y-auto w-full bg-[#0c0c0e] text-white px-4 sm:px-6 py-4 space-y-5 pb-20 lg:pb-8 player-responsive-details">
           {/* Title & Active Episode Header */}
           <div className="space-y-1.5 border-b border-white/10 pb-3">
             <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight line-clamp-1">

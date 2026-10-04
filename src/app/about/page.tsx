@@ -1,46 +1,65 @@
+import FAQ from "@/components/sections/About/FAQ";
+import Footer from "@/components/ui/layout/Footer";
 import { siteConfig } from "@/config/site";
 import { Metadata } from "next/dist/lib/metadata/types/metadata-interface";
-import dynamic from "next/dynamic";
-import { Suspense } from "react";
 import { NextPage } from "next";
-import Footer from "@/components/ui/layout/Footer";
-
-const FAQ = dynamic(() => import("@/components/sections/About/FAQ"));
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: `Help Center & FAQ | ${siteConfig.name}`,
 };
 
+const highlights = [
+  { label: "Catalog", value: "Movies & series" },
+  { label: "Playback", value: "Adaptive streams" },
+  { label: "Library", value: "Saved on your account" },
+];
+
 const AboutPage: NextPage = () => {
   return (
-    <div className="flex flex-col min-h-screen justify-between pt-20">
-      <div className="flex w-full justify-center px-4 md:px-8 py-8">
-        <div className="flex w-full max-w-3xl flex-col gap-6">
-          <div className="flex flex-col gap-2 text-center md:text-left border-b border-white/10 pb-6">
-            <h1 className="text-3xl md:text-4xl font-black text-white">
-              SnapFlix <span className="text-[#E50914]">Help Center</span>
-            </h1>
-            <p className="text-gray-400 text-sm md:text-base">
-              Frequently asked questions and guides for your private streaming experience.
+    <div className="flex min-h-screen flex-col justify-between pt-16">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 md:px-8">
+        <header className="cinema-panel relative overflow-hidden rounded-3xl px-6 py-8 md:px-8">
+          <div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-[#E50914]/25 blur-3xl" />
+          <p className="text-[11px] font-bold tracking-[0.32em] text-[#E50914] uppercase">
+            Help center
+          </p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-5xl">
+            How SnapFlix works
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400 md:text-base">
+            A private cinema catalog for discovering movies and series, picking up where you left
+            off, and keeping a watchlist of your own.
+          </p>
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {highlights.map((item) => (
+              <div key={item.label} className="rounded-2xl border border-white/8 bg-black/30 px-4 py-3">
+                <p className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
+                  {item.label}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </header>
+
+        <Suspense>
+          <FAQ />
+        </Suspense>
+
+        <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-white/10 bg-[#161618] px-6 py-5 text-center md:flex-row md:text-left">
+          <div>
+            <h3 className="text-base font-bold text-white md:text-lg">Still stuck?</h3>
+            <p className="mt-1 text-xs text-zinc-400">
+              Support can help with playback, accounts, and watchlist questions.
             </p>
           </div>
-
-          <Suspense>
-            <FAQ />
-          </Suspense>
-
-          <div className="mt-8 rounded-lg bg-[#181818] border border-white/10 p-6 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-            <div>
-              <h3 className="text-base md:text-lg font-bold text-white">Need more assistance?</h3>
-              <p className="text-xs text-gray-400 mt-1">Our customer support specialists are available 24/7.</p>
-            </div>
-            <a
-              href="mailto:support@snapflix.internal"
-              className="bg-[#E50914] hover:bg-[#B81D24] text-white font-semibold text-xs md:text-sm px-5 py-2.5 rounded-sm transition-colors shadow-md"
-            >
-              Contact Support
-            </a>
-          </div>
+          <a
+            href="mailto:support@snapflix.internal"
+            className="rounded-md bg-[#E50914] px-5 py-2.5 text-xs font-semibold text-white shadow-[0_8px_20px_rgba(229,9,20,0.35)] transition hover:bg-[#B81D24] md:text-sm"
+          >
+            Contact support
+          </a>
         </div>
       </div>
 

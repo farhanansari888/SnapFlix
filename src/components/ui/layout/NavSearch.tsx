@@ -201,9 +201,13 @@ const NavSearch = () => {
               type="button"
               onClick={() => setIsOpen(true)}
               aria-label="Search titles, actors, genres"
-              className="flex items-center gap-2 p-2 text-white/80 hover:text-white transition-colors cursor-pointer group"
+              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-2.5 py-1.5 text-white/85 transition hover:bg-white/15 hover:text-white cursor-pointer group"
             >
-              <IoSearchOutline size={20} className="transition-transform duration-200 group-hover:scale-110" />
+              <IoSearchOutline size={18} className="transition-transform duration-200 group-hover:scale-110" />
+              <span className="hidden text-xs font-medium text-white/70 md:inline">Search</span>
+              <kbd className="hidden rounded border border-white/10 bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold text-white/45 lg:inline">
+                Ctrl K
+              </kbd>
             </motion.button>
           ) : (
             <motion.div

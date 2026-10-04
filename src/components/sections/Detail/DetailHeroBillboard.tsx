@@ -47,20 +47,20 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
   const videos = media.videos?.results || [];
 
   return (
-    <div className="group relative h-[60dvh] min-h-[400px] max-h-[520px] sm:h-[68dvh] sm:min-h-[480px] sm:max-h-[620px] lg:h-[80dvh] lg:min-h-[540px] lg:max-h-[800px] 2xl:h-[78dvh] w-full select-none overflow-hidden bg-[#141414]">
+    <div className="group relative h-[60dvh] min-h-[400px] max-h-[520px] sm:h-[68dvh] sm:min-h-[480px] sm:max-h-[620px] lg:h-[80dvh] lg:min-h-[540px] lg:max-h-[800px] 2xl:h-[78dvh] w-full select-none overflow-hidden bg-[#0c0c0e]">
       {/* Background Backdrop: Edge-to-Edge Cinematic Brilliance */}
       <img
         src={bgUrl}
         alt={title}
-        className="absolute inset-0 size-full object-cover object-center sm:object-top filter brightness-100 contrast-[1.03] saturate-[1.05] pointer-events-none"
+        className="hero-ken absolute inset-0 size-full object-cover object-center sm:object-top brightness-105 contrast-[1.04] saturate-[1.08] pointer-events-none"
         draggable={false}
       />
 
       {/* Cinematic Vignette Gradients */}
       {/* Bottom smooth fade to content section */}
-      <div className="absolute inset-x-0 bottom-0 h-36 sm:h-48 md:h-56 bg-linear-to-t from-[#141414] via-[#141414]/50 to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-x-0 bottom-0 h-40 sm:h-52 md:h-64 bg-linear-to-t from-[#0c0c0e] via-[#0c0c0e]/55 to-transparent pointer-events-none z-10" />
       {/* Left subtle vignette only behind text */}
-      <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-3/5 bg-linear-to-r from-[#141414]/85 via-[#141414]/35 via-50% to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-3/5 bg-linear-to-r from-[#0c0c0e]/88 via-[#0c0c0e]/40 via-50% to-transparent pointer-events-none z-10" />
       {/* Top subtle navbar blend */}
       <div className="absolute top-0 inset-x-0 h-14 bg-linear-to-b from-black/20 to-transparent pointer-events-none z-10" />
 
@@ -139,7 +139,7 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
           {/* Main Play Button */}
           <Link
             href={playHref}
-            className="group/btn flex items-center gap-1.5 sm:gap-2.5 rounded-md bg-white px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-bold text-black shadow-lg transition-all duration-200 hover:bg-white/80 active:scale-95"
+            className="group/btn flex items-center gap-1.5 sm:gap-2.5 rounded-md bg-white px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-bold text-black shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition-all duration-200 hover:bg-[#f4f4f4] active:scale-95"
           >
             <FaPlay className="text-xs sm:text-sm md:text-base transition-transform group-hover/btn:scale-110" />
             <span>Play</span>
@@ -177,7 +177,7 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
       </div>
 
       {/* Bottom Right: Maturity Rating Pill */}
-      <div className="absolute right-4 md:right-12 bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 hidden sm:flex items-center bg-[#141414]/70 border-l-3 border-[#E50914] py-1.5 pl-3 pr-4 backdrop-blur-xs text-xs font-bold text-gray-200 uppercase tracking-wider z-30">
+      <div className="absolute right-4 md:right-12 bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 hidden sm:flex items-center bg-[#0c0c0e]/75 border-l-[3px] border-[#E50914] py-1.5 pl-3 pr-4 backdrop-blur-md text-[11px] font-bold text-gray-200 uppercase tracking-[0.16em] z-30">
         {media.adult ? "TV-MA / 18+" : "TV-14 / 16+"}
       </div>
     </div>

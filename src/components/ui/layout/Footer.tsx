@@ -14,10 +14,11 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
     <footer
       className={cn(
-        "w-full bg-[#070707] text-zinc-400 border-t border-white/5 pt-12 pb-8 px-6 sm:px-10 md:px-16 select-none",
+        "relative w-full bg-[#070708] text-zinc-400 border-t border-white/6 pt-14 pb-10 px-6 sm:px-10 md:px-16 select-none",
         className,
       )}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#E50914]/70 to-transparent" />
       <div className="max-w-7xl mx-auto flex flex-col">
         {/* 4-Column Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 pb-8">
@@ -38,7 +39,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
 
           {/* Column 2: Explore Navigation */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">EXPLORE</h3>
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-white">Explore</h3>
             <ul className="flex flex-col gap-2.5 text-xs text-zinc-400">
               <li>
                 <Link href="/" className="hover:text-white transition-colors">
@@ -71,8 +72,8 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
 
           {/* Column 3: Streaming Engine Features */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-              STREAMING ENGINE
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-white">
+              Streaming
             </h3>
             <ul className="flex flex-col gap-2.5 text-xs text-zinc-400">
               <li className="flex items-center gap-2">
@@ -96,8 +97,8 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
 
           {/* Column 4: Legal Disclaimer */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-              LEGAL DISCLAIMER
+            <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-white">
+              Disclaimer
             </h3>
             <p className="text-[11px] sm:text-xs text-zinc-400 leading-relaxed font-normal">
               SnapFlix does not host or store any media content on its servers. All media metadata is

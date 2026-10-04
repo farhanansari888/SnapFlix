@@ -54,7 +54,18 @@ const FAQ = () => {
   const { mobile } = useBreakpoints();
 
   return (
-    <Accordion variant="splitted" isCompact={mobile}>
+    <Accordion
+      variant="splitted"
+      isCompact={mobile}
+      className="px-0"
+      itemClasses={{
+        base: "bg-[#161618] border border-white/8 shadow-none px-1",
+        title: "text-sm font-semibold text-white md:text-base",
+        content: "text-sm leading-relaxed text-zinc-400 pb-4",
+        trigger: "py-4",
+        indicator: "text-zinc-400",
+      }}
+    >
       {FAQS.map(({ title, description }) => (
         <AccordionItem key={title} aria-label={title} title={title}>
           {description}
