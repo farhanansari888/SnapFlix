@@ -63,7 +63,7 @@ const TvShowPosterCard: React.FC<TvShowPosterCardProps> = ({ tv, variant = "full
                   18+
                 </Chip>
               )}
-              <div className="absolute top-2 right-2 z-20 rounded-full border border-white/10 bg-black/70 px-2 py-0.5 text-[11px] font-semibold text-[#f5c451] backdrop-blur-md">
+              <div className="sf-chip absolute top-2 right-2 z-20 rounded-full px-2 py-0.5 text-[11px] font-semibold text-[#f5c451]">
                 <Rating rate={tv.vote_average} />
               </div>
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/0 opacity-0 transition duration-300 group-hover:bg-black/35 group-hover:opacity-100">
@@ -83,7 +83,7 @@ const TvShowPosterCard: React.FC<TvShowPosterCardProps> = ({ tv, variant = "full
               isHoverable
               fullWidth
               shadow="md"
-              className="group h-full border border-white/8 bg-secondary-background transition duration-300 hover:-translate-y-1 hover:border-[#E50914]/50"
+              className="sf-glass group h-full overflow-hidden rounded-[1.15rem] border-white/15 bg-transparent transition duration-300 hover:-translate-y-1"
             >
               <CardHeader className="flex items-center justify-center pb-0">
                 <div className="relative size-full">

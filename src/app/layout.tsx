@@ -10,11 +10,9 @@ import Sidebar from "@/components/ui/layout/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { cn } from "@/utils/helpers";
-import { IS_PRODUCTION, SpacingClasses } from "@/utils/constants";
 import dynamic from "next/dynamic";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense } from "react";
-const Disclaimer = dynamic(() => import("@/components/ui/overlay/Disclaimer"));
 const AdShield = dynamic(() => import("@/components/ui/other/AdShield"));
 
 export const metadata: Metadata = {
@@ -81,7 +79,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <NuqsAdapter>
             <Providers>
               <AdShield />
-              {IS_PRODUCTION && <Disclaimer />}
               <TopNavbar />
               <Sidebar>
                 <main id="main" className="w-full min-h-screen overflow-x-hidden scroll-mt-20">

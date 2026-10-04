@@ -106,7 +106,7 @@ const Top10Row: React.FC<Top10RowProps> = ({ contentType: propContentType }) => 
                       {/* Netflix Stylized Giant Ranking Number */}
                       <span
                         className={cn(
-                          "netflix-number text-[110px] sm:text-[140px] md:text-[170px] leading-none select-none tracking-tighter -mr-4 sm:-mr-6 z-0 pointer-events-none drop-shadow-xl",
+                          "netflix-number pointer-events-none z-0 -mr-3 text-[76px] leading-none tracking-tighter select-none drop-shadow-xl sm:-mr-5 sm:text-[120px] md:text-[156px]",
                           BebasNeue.className,
                         )}
                         style={{
@@ -118,7 +118,7 @@ const Top10Row: React.FC<Top10RowProps> = ({ contentType: propContentType }) => 
                       </span>
 
                       {/* Poster Card */}
-                      <div className="relative z-10 aspect-2/3 h-[180px] sm:h-[220px] md:h-[250px] w-auto overflow-hidden rounded-xl border border-white/10 bg-[#161618] shadow-2xl transition-all duration-300 group-hover:border-[#E50914] group-hover:shadow-[0_12px_32px_rgba(229,9,20,0.35)]">
+                      <div className="relative z-10 aspect-2/3 h-[168px] w-auto overflow-hidden rounded-[1.05rem] border border-white/16 bg-[#161618] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_16px_32px_rgba(0,0,0,0.4)] transition-all duration-300 group-hover:border-white/40 sm:h-[210px] md:h-[240px]">
                         {/* Netflix Red Top 10 Ribbon */}
                         <div className="absolute top-0 right-0 z-20 bg-[#E50914] text-white text-[9px] font-black px-1.5 py-0.5 rounded-bl-sm uppercase tracking-wider shadow-md">
                           TOP 10

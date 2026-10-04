@@ -46,7 +46,7 @@ const RowHeader: React.FC<RowHeaderProps> = ({
       {href && (
         <Link
           href={href}
-          className="shrink-0 rounded-full px-1 py-1 text-sm font-medium text-zinc-300 underline-offset-4 transition-colors hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E50914]"
+          className="sf-chip shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-white/80 transition-colors hover:bg-white/16 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:text-sm"
         >
           {actionLabel}
         </Link>

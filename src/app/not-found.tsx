@@ -22,13 +22,13 @@ export default function NotFound() {
       <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
         <Link
           href="/"
-          className="rounded-md bg-white px-5 py-2.5 text-sm font-bold text-black transition hover:bg-white/85"
+          className="min-h-11 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-black transition hover:bg-white/85"
         >
           Back home
         </Link>
         <Link
           href="/discover"
-          className="rounded-md border border-white/15 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
+          className="sf-chip min-h-11 rounded-full px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20"
         >
           Browse catalog
         </Link>

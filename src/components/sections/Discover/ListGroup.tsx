@@ -9,7 +9,7 @@ const DiscoverListGroup = () => {
   const { content } = useDiscoverFilters();
 
   return (
-    <div className="w-full min-h-screen pt-20 sm:pt-24 pb-20 px-4 sm:px-8 md:px-12 max-w-7xl mx-auto flex flex-col gap-5">
+    <div className="mx-auto flex min-h-screen w-full max-w-7xl min-w-0 flex-col gap-5 px-4 pt-[calc(env(safe-area-inset-top)+5.5rem)] pb-8 sm:px-8 md:px-12">
       {/* Sleek Netflix Toolbar: Title, Switcher, Genre Dropdown & Categories */}
       <DiscoverFilters />
 

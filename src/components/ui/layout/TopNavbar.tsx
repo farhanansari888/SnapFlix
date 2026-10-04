@@ -39,22 +39,22 @@ const TopNavbar = () => {
     <Navbar
       disableScrollHandler
       isBlurred={false}
-      position="sticky"
+      position="static"
       maxWidth="full"
       classNames={{
-        wrapper: "px-4 md:px-12 h-16 md:h-18 max-w-full",
+        base: "bg-transparent",
+        wrapper: "h-14 max-w-full bg-transparent px-2.5 sm:px-3.5",
       }}
       className={cn(
-        "top-0 left-0 right-0 fixed z-50 transition-all duration-400 ease-in-out",
-        isScrolled
-          ? "bg-[#0c0c0e]/78 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl border-b border-white/8"
-          : "bg-linear-to-b from-black/70 via-black/25 to-transparent",
+        "sf-glass-strong fixed z-50 mx-auto w-auto rounded-full transition-all duration-300",
+        "top-[max(0.55rem,env(safe-area-inset-top))] right-3 left-3 md:right-6 md:left-6 lg:right-10 lg:left-10",
+        isScrolled && "shadow-[0_18px_40px_rgba(0,0,0,0.45)]",
       )}
     >
       {/* Left: Brand Logo */}
       <NavbarBrand className="grow-0 basis-auto shrink-0">
         {!isMediaRoute ? (
-          <BrandLogo size="md" />
+          <BrandLogo size="sm" className="[&_svg]:h-7 sm:[&_svg]:h-8 md:[&_svg]:h-9" />
         ) : (
           <BackButton href={tv ? "/?content=tv" : "/"} />
         )}
@@ -62,7 +62,7 @@ const TopNavbar = () => {
 
       {/* Center: Netflix Translucent Cylinder Nav Links */}
       <NavbarContent justify="center" className="hidden md:flex grow">
-        <nav className="flex items-center gap-0.5 rounded-full border border-white/10 bg-black/40 p-1 shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+        <nav className="sf-chip flex items-center gap-0.5 rounded-full p-1">
           {navLinks.map((link) => (
             <Link
               key={link.label}
@@ -71,8 +71,8 @@ const TopNavbar = () => {
               className={cn(
                 "rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white lg:px-4 lg:text-sm",
                 link.active
-                  ? "bg-[#E50914] text-white shadow-[0_6px_16px_rgba(229,9,20,0.4)]"
-                  : "text-white/75 hover:bg-white/10 hover:text-white",
+                  ? "bg-white text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                  : "text-white/75 hover:bg-white/12 hover:text-white",
               )}
             >
               {link.label}

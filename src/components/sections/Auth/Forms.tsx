@@ -83,7 +83,7 @@ const AuthForms: React.FC = () => {
       <div className="pointer-events-none relative z-50 container mx-auto flex size-full flex-col items-center justify-center p-3">
         <Card
           shadow="lg"
-          className="border-foreground-200 bg-background/70 dark:bg-background/80 pointer-events-auto w-full max-w-lg border-2 p-1 backdrop-blur-md md:p-3"
+          className="sf-glass-strong pointer-events-auto max-h-[calc(100dvh-1.5rem-env(safe-area-inset-bottom))] w-full max-w-lg overflow-y-auto rounded-[1.6rem] border-white/20 p-1 md:p-3"
         >
           <CardHeader className="relative flex items-center justify-center">
             {form === "forgot" && (

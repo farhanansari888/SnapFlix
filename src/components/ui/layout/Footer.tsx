@@ -14,7 +14,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
     <footer
       className={cn(
-        "relative w-full bg-[#070708] text-zinc-400 border-t border-white/6 pt-14 pb-10 px-6 sm:px-10 md:px-16 select-none",
+        "sf-glass relative mt-8 w-full rounded-none border-x-0 border-b-0 text-zinc-300 select-none px-5 pt-12 pb-[max(7rem,calc(env(safe-area-inset-bottom)+6.5rem))] sm:px-10 md:px-16 md:pb-12",
         className,
       )}
     >

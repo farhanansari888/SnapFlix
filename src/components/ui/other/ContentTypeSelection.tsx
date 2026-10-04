@@ -27,9 +27,9 @@ const ContentTypeSelection: React.FC<ContentTypeSelectionProps> = ({ onTypeChang
       color="primary"
       onSelectionChange={(value) => handleTabChange(value as ContentType)}
       classNames={{
-        tabList: "bg-[#161618] p-1 rounded-full border border-white/10 shadow-lg",
-        cursor: "bg-[#E50914] rounded-full shadow-md shadow-red-950/50",
-        tab: "px-5 py-1.5 h-8 text-xs md:text-sm font-semibold text-gray-400 data-[selected=true]:text-white transition-colors",
+        tabList: "sf-glass rounded-full p-1 shadow-none",
+        cursor: "rounded-full bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]",
+        tab: "h-11 px-4 text-xs font-semibold text-white/70 transition-colors data-[selected=true]:text-black md:px-5 md:text-sm",
       }}
       {...props}
     >
