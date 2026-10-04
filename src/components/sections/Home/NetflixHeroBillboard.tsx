@@ -10,8 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaPlay } from "react-icons/fa6";
-import { IoInformationCircleOutline } from "react-icons/io5";
+import { FaChevronLeft, FaChevronRight, FaPlay } from "react-icons/fa6";
+import { IoInformationCircleOutline, IoPause } from "react-icons/io5";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/utils/helpers";
 
@@ -20,6 +20,8 @@ interface NetflixHeroBillboardProps {
 }
 
 const SLIDE_INTERVAL_MS = 7000;
+const heroFrame =
+  "relative h-[62dvh] min-h-[420px] max-h-[540px] w-full overflow-hidden bg-[#0c0c0e] sm:h-[70dvh] sm:min-h-[500px] sm:max-h-[680px] lg:h-[78dvh] lg:min-h-[560px] lg:max-h-[820px]";
 
 const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType: propContentType }) => {
   const searchParams = useSearchParams();
@@ -131,16 +133,15 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
 
   if (isPending && (!heroItems || heroItems.length === 0)) {
     return (
-      <div className="relative h-[62dvh] min-h-[400px] max-h-[520px] sm:h-[70dvh] sm:min-h-[480px] sm:max-h-[640px] lg:h-[82dvh] lg:min-h-[560px] lg:max-h-[820px] 2xl:h-[80dvh] w-full overflow-hidden bg-[#0c0c0e]">
+      <div className={heroFrame}>
         <Skeleton className="size-full rounded-none opacity-20" />
-        <div className="absolute bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 left-4 md:left-12 flex flex-col gap-3 max-w-xl z-20">
-          <Skeleton className="h-5 w-28 sm:h-6 sm:w-36 rounded-sm opacity-40" />
-          <Skeleton className="h-9 w-60 sm:h-14 sm:w-80 rounded-sm opacity-40" />
-          <Skeleton className="h-3.5 w-44 sm:h-4 sm:w-60 rounded-sm opacity-30" />
-          <Skeleton className="h-10 w-full sm:h-16 rounded-sm opacity-30" />
-          <div className="flex gap-2.5">
-            <Skeleton className="h-9 w-24 sm:h-11 sm:w-32 rounded-md opacity-40" />
-            <Skeleton className="h-9 w-28 sm:h-11 sm:w-36 rounded-md opacity-40" />
+        <div className="absolute inset-x-4 bottom-14 z-20 flex max-w-xl flex-col gap-3 md:left-12">
+          <Skeleton className="h-4 w-24 rounded-full opacity-40" />
+          <Skeleton className="h-10 w-64 rounded-md opacity-40" />
+          <Skeleton className="h-4 w-40 rounded-full opacity-30" />
+          <div className="flex gap-2">
+            <Skeleton className="h-11 w-28 rounded-full opacity-40" />
+            <Skeleton className="h-11 w-28 rounded-full opacity-30" />
           </div>
         </div>
       </div>
@@ -152,7 +153,8 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
   return (
     <div
       className={cn(
-        "group/hero relative h-[62dvh] min-h-[400px] max-h-[520px] sm:h-[70dvh] sm:min-h-[480px] sm:max-h-[640px] lg:h-[82dvh] lg:min-h-[560px] lg:max-h-[820px] 2xl:h-[80dvh] w-full select-none overflow-hidden bg-[#0c0c0e]",
+        "group/hero select-none",
+        heroFrame,
         paused && "hero-paused",
       )}
       onMouseEnter={() => setHoverPaused(true)}
@@ -196,8 +198,7 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
 
             return (
               <div key={item.id || idx} className="relative h-full w-full flex-none overflow-hidden">
-                {/* Background Backdrop: Vibrant, Crisp, 100% Brightness */}
-                  <img
+                <img
                   src={bgUrl}
                   alt=""
                   width={1280}
@@ -205,83 +206,57 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
                   fetchPriority={idx === currentIndex ? "high" : "low"}
                   loading={idx === currentIndex ? "eager" : "lazy"}
                   className={cn(
-                    "absolute inset-0 size-full object-cover object-center sm:object-top brightness-105 contrast-[1.04] saturate-[1.08] pointer-events-none",
+                    "pointer-events-none absolute inset-0 size-full object-cover object-[center_22%] sm:object-top",
                     idx === currentIndex && "hero-ken",
                   )}
                   draggable={false}
                 />
 
-                {/* Cinematic Vignette Gradients */}
-                {/* Bottom smooth fade to content section */}
-                <div className="absolute inset-x-0 bottom-0 h-36 sm:h-52 md:h-64 bg-linear-to-t from-[#0c0c0e] via-[#0c0c0e]/50 to-transparent pointer-events-none z-10" />
-                {/* Left vignette only behind text on larger screens */}
-                <div className="absolute inset-y-0 left-0 hidden w-3/5 bg-linear-to-r from-[#0c0c0e]/80 via-[#0c0c0e]/30 to-transparent pointer-events-none z-10 md:block" />
-                {/* Top subtle navbar blend */}
-                <div className="absolute top-0 inset-x-0 h-14 bg-linear-to-b from-black/20 to-transparent pointer-events-none z-10" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[68%] bg-linear-to-t from-[#0c0c0e] via-[#0c0c0e]/80 to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-1/2 bg-linear-to-r from-[#0c0c0e]/70 to-transparent md:block" />
 
-                {/* Slide Content */}
-                <div className="sf-glass sf-glass-mobile absolute right-3 bottom-[4.6rem] left-3 z-20 flex max-w-none flex-col gap-2 p-3.5 sm:right-4 sm:bottom-20 sm:left-4 sm:p-4 md:right-auto md:bottom-20 md:left-12 md:max-w-xl md:gap-3 md:p-0 lg:max-w-2xl">
-                  {/* Netflix Brand Tagline / Badge */}
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <div className="flex items-center justify-center h-4 w-3.5 sm:h-5 sm:w-4 rounded-xs bg-linear-to-b from-[#E50914] to-[#B81D24] shadow-xs">
-                      <span className="text-[9px] sm:text-[11px] font-black text-white">S</span>
-                    </div>
-                    <span className="text-[10px] sm:text-xs md:text-sm font-extrabold tracking-[0.18em] sm:tracking-[0.22em] text-white uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                      {isTv ? "SNAPFLIX ORIGINAL" : "SNAPFLIX FILM"}
-                    </span>
-                    <span className="bg-[#E50914] text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-[0_0_16px_rgba(229,9,20,0.45)]">
-                      #{idx + 1} Today
-                    </span>
-                  </div>
+                <div className="absolute inset-x-4 bottom-12 z-20 flex max-w-xl flex-col gap-2 sm:inset-x-8 sm:bottom-14 md:left-12 md:gap-3">
+                  <p className="text-xs font-semibold text-white/80 sm:text-sm">
+                    <span className="text-[#46d369]">{matchPercentage}% match</span>
+                    <span className="mx-2 text-white/35">·</span>
+                    #{idx + 1} today
+                  </p>
 
-                  {/* Title */}
-                  <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] line-clamp-2 leading-tight">
+                  <h1 className="line-clamp-2 text-[1.7rem] leading-[1.05] font-black tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-6xl">
                     {title}
                   </h1>
 
-                  {/* Top Trending Badge & Metadata */}
-                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 text-[11px] sm:text-xs md:text-sm">
-                    <span className="font-extrabold text-[#46D369] drop-shadow-sm">
-                      {matchPercentage}% Match
-                    </span>
-                    <span className="text-gray-300 font-medium">{releaseYear}</span>
-                    <span className="border border-white/40 px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded-xs text-[10px] sm:text-[11px] font-bold text-white uppercase">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/75 sm:text-sm">
+                    <span>{releaseYear}</span>
+                    <span className="rounded-full border border-white/25 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                       {item.adult ? "18+" : "16+"}
                     </span>
-                    <span className="hidden sm:inline-block border border-white/30 px-1.5 py-0.5 rounded-xs text-[11px] font-bold text-gray-200">
-                      4K Ultra HD
-                    </span>
-                    <span className="hidden md:inline-block border border-white/30 px-1.5 py-0.5 rounded-xs text-[11px] font-bold text-gray-200">
-                      5.1 Audio
-                    </span>
+                    <span className="hidden sm:inline">{isTv ? "Series" : "Film"}</span>
                   </div>
 
-                  {/* Overview */}
-                  <p className="line-clamp-1 max-w-lg text-xs leading-relaxed text-gray-200/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] sm:line-clamp-2 sm:text-sm md:line-clamp-3 md:text-base">
-                    {item.overview || "Stream this blockbuster title now exclusively on SnapFlix."}
+                  <p className="line-clamp-2 hidden max-w-lg text-sm leading-relaxed text-white/80 sm:block md:text-base">
+                    {item.overview || "Stream this title on SnapFlix."}
                   </p>
 
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1 sm:pt-2">
+                  <div className="flex items-center gap-2 pt-1">
                     <Link
                       href={playHref}
-                      className="group/btn flex min-h-11 items-center gap-1.5 sm:gap-2.5 rounded-full bg-white px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-bold text-black shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition-all duration-200 hover:bg-[#f4f4f4] active:scale-95 shrink-0"
+                      className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-black transition active:scale-95"
                     >
-                      <FaPlay className="text-xs sm:text-sm md:text-base transition-transform group-hover/btn:scale-110" />
-                      <span>Play</span>
+                      <FaPlay className="size-3.5" />
+                      Play
                     </Link>
-
                     <Link
                       href={detailHref}
-                      className="sf-chip flex min-h-11 items-center gap-1.5 sm:gap-2 rounded-full px-3.5 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-semibold text-white transition-all duration-200 hover:bg-white/20 active:scale-95 shrink-0"
+                      className="sf-chip inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold text-white transition hover:bg-white/15"
                     >
-                      <IoInformationCircleOutline size={18} className="sm:size-[22px]" />
-                      <span>More Info</span>
+                      <IoInformationCircleOutline className="size-5" />
+                      Info
                     </Link>
-
-                    <div className="scale-95 sm:scale-105 shrink-0">
-                      <BookmarkButton data={bookmarkData} />
-                    </div>
+                    <BookmarkButton
+                      data={bookmarkData}
+                      className="sf-chip size-11 min-w-11 rounded-full bg-transparent text-white shadow-none"
+                    />
                   </div>
                 </div>
               </div>
@@ -290,45 +265,55 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
         </div>
       </div>
 
-      {/* Bottom Right: Clean Slide Indicators & Maturity Rating */}
-      <div className="absolute inset-x-3 bottom-3 z-30 flex items-center justify-between gap-2 sm:inset-x-4 sm:bottom-4 md:inset-x-auto md:right-12 md:bottom-20 md:justify-end md:gap-4">
-        <button
-          type="button"
-          onClick={() => setManualPaused((value) => !value)}
-          aria-pressed={manualPaused}
-          className="sf-chip min-h-10 rounded-full px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          <span className="sm:hidden">{manualPaused ? "Play" : "Pause"}</span>
-          <span className="hidden sm:inline">{manualPaused ? "Play slides" : "Pause slides"}</span>
-        </button>
-        {/* Clean Capsule Slide Indicators */}
-        <div className="sf-chip flex items-center gap-1.5 rounded-full px-2.5 py-2 sm:gap-2 sm:px-3">
-          {heroItems.map((_, idx: number) => {
+      <button
+        type="button"
+        onClick={() => emblaApi?.scrollPrev()}
+        aria-label="Previous title"
+        className="sf-glass-strong absolute top-1/2 left-4 z-30 hidden size-11 -translate-y-1/2 place-items-center rounded-full text-white opacity-0 transition group-hover/hero:opacity-100 md:grid"
+      >
+        <FaChevronLeft className="size-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => emblaApi?.scrollNext()}
+        aria-label="Next title"
+        className="sf-glass-strong absolute top-1/2 right-4 z-30 hidden size-11 -translate-y-1/2 place-items-center rounded-full text-white opacity-0 transition group-hover/hero:opacity-100 md:grid"
+      >
+        <FaChevronRight className="size-4" />
+      </button>
+
+      <div className="absolute inset-x-4 bottom-3 z-30 flex items-center gap-3 sm:inset-x-8 md:inset-x-12">
+        <div className="flex min-w-0 flex-1 gap-1.5">
+          {heroItems.map((_, idx) => {
             const isCurrent = idx === currentIndex;
             return (
               <button
                 key={idx}
+                type="button"
                 onClick={() => handleSlideClick(idx)}
-                aria-label={`Slide ${idx + 1}`}
+                aria-label={`Show title ${idx + 1}`}
                 aria-current={isCurrent ? "true" : undefined}
-                className="group/dot relative h-1.5 rounded-full overflow-hidden transition-all duration-300 focus:outline-hidden cursor-pointer bg-white/30"
-                style={{ width: isCurrent ? "34px" : "8px" }}
+                className="relative h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-white/25"
               >
                 {isCurrent && (
                   <span
-                    key={`progress-${currentIndex}`}
-                    className="hero-progress absolute inset-0 origin-left bg-[#E50914] shadow-[0_0_10px_rgba(229,9,20,0.85)]"
+                    key={`progress-${currentIndex}-${paused ? "paused" : "play"}`}
+                    className="hero-progress absolute inset-0 origin-left bg-white"
                   />
                 )}
               </button>
             );
           })}
         </div>
-
-        {/* Maturity Rating Pill */}
-        <div className="sf-chip hidden items-center rounded-full border-l-[3px] border-l-[#E50914] py-1.5 pr-4 pl-3 text-[11px] font-bold tracking-[0.16em] text-gray-200 uppercase lg:flex">
-          {heroItems[currentIndex]?.adult ? "TV-MA / 18+" : "TV-14 / 16+"}
-        </div>
+        <button
+          type="button"
+          onClick={() => setManualPaused((value) => !value)}
+          aria-pressed={manualPaused}
+          aria-label={manualPaused ? "Play slides" : "Pause slides"}
+          className="sf-chip grid size-9 shrink-0 place-items-center rounded-full text-white"
+        >
+          {manualPaused ? <FaPlay className="size-3" /> : <IoPause className="size-4" />}
+        </button>
       </div>
     </div>
   );
