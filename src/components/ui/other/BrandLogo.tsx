@@ -34,11 +34,11 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
     >
       {/* Netflix-style Arched Curved Wordmark SNAPFLIX (No preceding logo icon) */}
       <svg
-        viewBox={align === "left" ? "25 0 122 38" : "0 0 170 38"}
+        viewBox={align === "left" ? "22 -8 128 48" : "-4 -8 178 48"}
         className={cn(
-          "w-auto select-none overflow-visible",
+          "w-auto overflow-visible",
           size === "sm" && "h-7 sm:h-8",
-          size === "md" && "h-8 sm:h-9 md:h-10",
+          size === "md" && "h-8 sm:h-9",
           size === "lg" && "h-10 sm:h-12",
         )}
         xmlns="http://www.w3.org/2000/svg"

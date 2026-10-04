@@ -145,7 +145,7 @@
 }
 
 @utility embla__slide {
-  @apply min-w-0 flex-[0_0_100%];
+  @apply min-w-max shrink-0 grow-0;
 }
 
 @utility absolute-center {

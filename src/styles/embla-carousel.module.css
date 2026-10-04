@@ -1,9 +1,14 @@
 .wrapper {
+  position: relative;
+}
+
+.viewport {
   overflow: hidden;
 }
 
 .container {
   display: flex;
+  align-items: stretch;
   cursor: grab;
 }
 
@@ -12,6 +17,6 @@
 }
 
 .container > * {
-  flex: 0 0 100%;
-  min-width: 0;
+  flex: 0 0 auto;
+  min-width: max-content;
 }

@@ -24,7 +24,7 @@ export interface CarouselProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Carousel = ({
   children,
-  withScrollShadow = true,
+  withScrollShadow = false,
   isButtonDisabled = false,
   autoHideButton = true,
   options = { dragFree: true, slidesToScroll: "auto" },
@@ -62,9 +62,9 @@ const Carousel = ({
               aria-label="Scroll previous"
               radius="full"
               disableRipple
-              icon={<ChevronLeft size={22} />}
+              icon={<ChevronLeft className="size-5 text-white" />}
               className={cn(
-                "sf-glass-strong absolute top-1/2 left-1 z-20 hidden size-11 min-w-11 -translate-y-1/2 rounded-full text-white transition md:flex",
+                "sf-glass-strong absolute top-1/2 left-2 z-20 hidden size-11 min-w-11 -translate-y-1/2 rounded-full border-white/25 bg-transparent text-white md:flex",
                 autoHideButton && "opacity-0 group-hover/rail:opacity-100",
                 !c.canScrollPrev && "!hidden",
               )}
@@ -74,16 +74,16 @@ const Carousel = ({
               aria-label="Scroll next"
               radius="full"
               disableRipple
-              icon={<ChevronRight size={22} />}
+              icon={<ChevronRight className="size-5 text-white" />}
               className={cn(
-                "sf-glass-strong absolute top-1/2 right-1 z-20 hidden size-11 min-w-11 -translate-y-1/2 rounded-full text-white transition md:flex",
+                "sf-glass-strong absolute top-1/2 right-2 z-20 hidden size-11 min-w-11 -translate-y-1/2 rounded-full border-white/25 bg-transparent text-white md:flex",
                 autoHideButton && "opacity-0 group-hover/rail:opacity-100",
                 !c.canScrollNext && "!hidden",
               )}
             />
           </>
         )}
-        <div className={cn(styles.viewport, classNames?.viewport)} ref={c.emblaRef}>
+        <div className={cn("overflow-hidden", styles.viewport, classNames?.viewport)} ref={c.emblaRef}>
           <div className={cn(styles.container, classNames?.container)}>{children}</div>
         </div>
       </div>

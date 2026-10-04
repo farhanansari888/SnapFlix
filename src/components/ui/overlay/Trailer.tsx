@@ -73,7 +73,7 @@ const Trailer: React.FC<TrailerProps> = ({ videos, color = "primary" }) => {
                       return (
                         <div
                           key={trailer.key}
-                          className="embla__slide flex aspect-video size-full items-center rounded-large px-1 py-2"
+                          className="embla__slide flex aspect-video w-full min-w-full flex-[0_0_100%] items-center rounded-large px-1 py-2"
                         >
                           <Skeleton className="size-full rounded-large" />
                           {inView && (

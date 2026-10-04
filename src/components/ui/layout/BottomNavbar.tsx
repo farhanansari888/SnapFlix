@@ -34,7 +34,7 @@ const BottomNavbar = () => {
                     : "text-white/65 hover:bg-white/10 hover:text-white",
                 )}
               >
-                <span className="size-5">{isActive ? item.activeIcon : item.icon}</span>
+                <span className="flex size-5 items-center justify-center [&_svg]:size-5">{isActive ? item.activeIcon : item.icon}</span>
                 <span className={cn("leading-none", isActive && "font-semibold")}>{item.label}</span>
               </Link>
             );
