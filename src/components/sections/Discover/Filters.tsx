@@ -137,12 +137,11 @@ const DiscoverFilters: React.FC = () => {
   return (
     <div className="w-full flex flex-col gap-5">
       <div>
-        <p className="text-[11px] font-bold tracking-[0.32em] text-[#E50914] uppercase">Catalog</p>
-        <h1 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
-          New & Popular
+        <h1 className="text-3xl font-semibold tracking-tight text-balance text-white sm:text-4xl">
+          New and popular
         </h1>
-        <p className="mt-2 max-w-xl text-sm text-zinc-400">
-          Trending films, series, and genres — refreshed through the day.
+        <p className="mt-2 max-w-xl text-sm text-pretty text-zinc-400">
+          Trending films, series, and genres, refreshed through the day.
         </p>
       </div>
     <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-white/10">

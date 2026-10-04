@@ -59,8 +59,7 @@ const Top10Row: React.FC<Top10RowProps> = ({ contentType: propContentType }) => 
       {/* Netflix Section Title */}
       <RowHeader
         accent="Top 10"
-        title={isTv ? "TV Shows Today" : "Movies Today"}
-        eyebrow="Ranked for tonight"
+        title={isTv ? "series today" : "movies today"}
         href={`/discover?type=todayTrending${isTv ? "&content=tv" : ""}`}
         className="px-4 md:px-12"
       />

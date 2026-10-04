@@ -68,7 +68,7 @@ const ContinueWatching: React.FC = () => {
 
   return (
     <section id="continue-watching" className="flex flex-col gap-2 min-h-[220px] px-4 md:px-12">
-      <RowHeader title="Continue Watching" eyebrow="Pick up where you left off" />
+      <RowHeader title="Continue watching" />
       <Carousel>
         {list.map((media) => (
           <div

@@ -28,8 +28,9 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hoverPaused, setHoverPaused] = useState(false);
+  const [manualPaused, setManualPaused] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const paused = hoverPaused || hidden;
+  const paused = hoverPaused || hidden || manualPaused;
 
   // Embla Carousel with true seamless Infinite Loop
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -196,9 +197,13 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
             return (
               <div key={item.id || idx} className="relative h-full w-full flex-none overflow-hidden">
                 {/* Background Backdrop: Vibrant, Crisp, 100% Brightness */}
-                <img
+                  <img
                   src={bgUrl}
-                  alt={title}
+                  alt=""
+                  width={1280}
+                  height={720}
+                  fetchPriority={idx === currentIndex ? "high" : "low"}
+                  loading={idx === currentIndex ? "eager" : "lazy"}
                   className={cn(
                     "absolute inset-0 size-full object-cover object-center sm:object-top brightness-105 contrast-[1.04] saturate-[1.08] pointer-events-none",
                     idx === currentIndex && "hero-ken",
@@ -287,6 +292,14 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
 
       {/* Bottom Right: Clean Slide Indicators & Maturity Rating */}
       <div className="absolute right-4 md:right-12 bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 flex items-center gap-2.5 sm:gap-4 z-30">
+        <button
+          type="button"
+          onClick={() => setManualPaused((value) => !value)}
+          aria-pressed={manualPaused}
+          className="rounded-full border border-white/15 bg-black/55 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur-md transition-colors hover:bg-black/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          {manualPaused ? "Play slides" : "Pause slides"}
+        </button>
         {/* Clean Capsule Slide Indicators */}
         <div className="flex items-center gap-1.5 sm:gap-2 bg-black/55 backdrop-blur-md px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full border border-white/15">
           {heroItems.map((_, idx: number) => {

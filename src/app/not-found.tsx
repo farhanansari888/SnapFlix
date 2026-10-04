@@ -11,17 +11,13 @@ export default function NotFound() {
   return (
     <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 text-center">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(229,9,20,0.22),transparent_58%)]" />
-      <p className="relative text-[11px] font-bold tracking-[0.42em] text-[#E50914] uppercase">
-        Lost in the catalog
-      </p>
       <h1
-        className={`${BebasNeue.className} relative mt-2 text-[7.5rem] leading-none text-white sm:text-[10rem]`}
+        className={`${BebasNeue.className} relative text-[7.5rem] leading-none text-white sm:text-[10rem]`}
       >
         404
       </h1>
-      <p className="relative max-w-md text-sm text-zinc-400 sm:text-base">
-        This title isn&apos;t in the SnapFlix lineup. It may have moved, or the link is no longer
-        playing.
+      <p className="relative max-w-md text-pretty text-sm text-zinc-300 sm:text-base">
+        This page is not in the catalog. The link may be old, or the title may have moved.
       </p>
       <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
         <Link

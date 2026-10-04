@@ -51,7 +51,10 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
       {/* Background Backdrop: Edge-to-Edge Cinematic Brilliance */}
       <img
         src={bgUrl}
-        alt={title}
+        alt=""
+        width={1280}
+        height={720}
+        fetchPriority="high"
         className="hero-ken absolute inset-0 size-full object-cover object-center sm:object-top brightness-105 contrast-[1.04] saturate-[1.08] pointer-events-none"
         draggable={false}
       />

@@ -44,6 +44,12 @@
     border-color: var(--color-gray-800, #262626);
   }
 
+  html {
+    color-scheme: dark;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   html,
   body {
     background-color: var(--cinema-bg);

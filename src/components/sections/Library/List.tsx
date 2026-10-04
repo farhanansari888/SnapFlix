@@ -140,11 +140,8 @@ const LibraryList = () => {
           <div>
             <div className="flex items-center gap-3">
               <div>
-                <p className="mb-1 text-[11px] font-bold tracking-[0.28em] text-[#E50914] uppercase">
-                  Your shelf
-                </p>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
-                  My Library
+                <h1 className="text-2xl font-semibold tracking-tight text-balance text-white sm:text-3xl md:text-4xl">
+                  My library
                 </h1>
               </div>
               {hasItems && (

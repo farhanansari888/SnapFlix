@@ -39,7 +39,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
 
           {/* Column 2: Explore Navigation */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-white">Explore</h3>
+            <h3 className="text-sm font-semibold text-white">Explore</h3>
             <ul className="flex flex-col gap-2.5 text-xs text-zinc-400">
               <li>
                 <Link href="/" className="hover:text-white transition-colors">
@@ -72,9 +72,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
 
           {/* Column 3: Streaming Engine Features */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-white">
-              Streaming
-            </h3>
+            <h3 className="text-sm font-semibold text-white">Streaming</h3>
             <ul className="flex flex-col gap-2.5 text-xs text-zinc-400">
               <li className="flex items-center gap-2">
                 <IoShieldCheckmarkOutline size={14} className="text-[#E50914] shrink-0" />
@@ -97,9 +95,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
 
           {/* Column 4: Legal Disclaimer */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-white">
-              Disclaimer
-            </h3>
+            <h3 className="text-sm font-semibold text-white">Disclaimer</h3>
             <p className="text-[11px] sm:text-xs text-zinc-400 leading-relaxed font-normal">
               SnapFlix does not host or store any media content on its servers. All media metadata is
               curated for high quality presentation. Video streams are served via third-party iframe

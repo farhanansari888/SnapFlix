@@ -61,15 +61,22 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html suppressHydrationWarning lang="en" className="dark">
+    <html suppressHydrationWarning lang="en" className="dark" style={{ colorScheme: "dark" }}>
+      <link rel="preconnect" href="https://image.tmdb.org" crossOrigin="anonymous" />
       <body
         suppressHydrationWarning
         className={cn(
-          "bg-background min-h-dvh antialiased select-none text-foreground overflow-x-hidden",
+          "bg-background min-h-dvh antialiased text-foreground overflow-x-hidden",
           Poppins.className,
           BebasNeue.variable,
         )}
       >
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[80] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"
+        >
+          Skip to content
+        </a>
         <Suspense>
           <NuqsAdapter>
             <Providers>
@@ -77,7 +84,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               {IS_PRODUCTION && <Disclaimer />}
               <TopNavbar />
               <Sidebar>
-                <main className="w-full min-h-screen overflow-x-hidden">
+                <main id="main" className="w-full min-h-screen overflow-x-hidden scroll-mt-20">
                   {children}
                 </main>
               </Sidebar>

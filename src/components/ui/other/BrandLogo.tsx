@@ -29,7 +29,8 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
         "group inline-flex items-center transition-transform duration-300 hover:scale-105 active:scale-95 shrink-0 select-none",
         className,
       )}
-      aria-label="SnapFlix Home"
+      aria-label="SnapFlix home"
+      translate="no"
     >
       {/* Netflix-style Arched Curved Wordmark SNAPFLIX (No preceding logo icon) */}
       <svg

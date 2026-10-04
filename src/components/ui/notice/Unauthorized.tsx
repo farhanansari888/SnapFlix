@@ -14,8 +14,7 @@ const UnauthorizedNotice: React.FC<UnauthorizedNoticeProps> = ({ title, descript
       <div className="flex size-16 items-center justify-center rounded-2xl bg-[#E50914]/15 text-[#E50914] ring-1 ring-[#E50914]/30">
         <IoLockClosedOutline size={28} />
       </div>
-      <p className="text-[11px] font-bold tracking-[0.28em] text-[#E50914] uppercase">Members only</p>
-      <h3 className="text-2xl font-black tracking-tight text-white sm:text-3xl">{title}</h3>
+      <h3 className="text-2xl font-semibold tracking-tight text-balance text-white sm:text-3xl">{title}</h3>
       <p className="max-w-md text-sm text-zinc-400 sm:text-base">{description}</p>
       <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
         <Button

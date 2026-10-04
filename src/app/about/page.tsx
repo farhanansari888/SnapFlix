@@ -21,10 +21,7 @@ const AboutPage: NextPage = () => {
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 md:px-8">
         <header className="cinema-panel relative overflow-hidden rounded-3xl px-6 py-8 md:px-8">
           <div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-[#E50914]/25 blur-3xl" />
-          <p className="text-[11px] font-bold tracking-[0.32em] text-[#E50914] uppercase">
-            Help center
-          </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-white md:text-5xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-balance text-white md:text-5xl">
             How SnapFlix works
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-400 md:text-base">
@@ -34,9 +31,7 @@ const AboutPage: NextPage = () => {
           <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
             {highlights.map((item) => (
               <div key={item.label} className="rounded-2xl border border-white/8 bg-black/30 px-4 py-3">
-                <p className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
-                  {item.label}
-                </p>
+                <p className="text-xs font-medium text-zinc-500">{item.label}</p>
                 <p className="mt-1 text-sm font-semibold text-white">{item.value}</p>
               </div>
             ))}

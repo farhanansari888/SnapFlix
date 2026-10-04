@@ -221,11 +221,16 @@ const NavSearch = () => {
               <IoSearchOutline size={15} className="text-gray-300 shrink-0 mr-1.5" />
               <input
                 ref={inputRef}
-                type="text"
+                id="nav-search"
+                name="q"
+                type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search..."
-                className="bg-transparent text-xs sm:text-sm text-white placeholder-gray-400 outline-hidden w-full"
+                placeholder="Titles, people, genres…"
+                aria-label="Search titles, people, and genres"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full bg-transparent text-xs text-white placeholder-gray-400 focus-visible:outline-none sm:text-sm"
               />
               <AnimatePresence>
                 {query && (

@@ -69,7 +69,7 @@ const TopNavbar = () => {
               href={link.href}
               aria-current={link.active ? "page" : undefined}
               className={cn(
-                "rounded-full px-3.5 lg:px-4 py-1.5 text-xs lg:text-sm font-semibold tracking-wide transition-all duration-200 select-none",
+                "rounded-full px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white lg:px-4 lg:text-sm",
                 link.active
                   ? "bg-[#E50914] text-white shadow-[0_6px_16px_rgba(229,9,20,0.4)]"
                   : "text-white/75 hover:bg-white/10 hover:text-white",
