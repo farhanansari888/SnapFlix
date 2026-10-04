@@ -11,11 +11,16 @@ import dynamic from "next/dynamic";
 import { Params } from "@/types";
 import { NextPage } from "next";
 import { MOCK_MOVIES } from "@/utils/mockData";
+import { mutateMovieTitle } from "@/utils/movies";
+import { siteConfig } from "@/config/site";
+import { useDocumentTitle } from "@mantine/hooks";
 import Footer from "@/components/ui/layout/Footer";
+import { Skeleton } from "@heroui/react";
 const PhotosSection = dynamic(() => import("@/components/ui/other/PhotosSection"));
 const DetailHeroBillboard = dynamic(() => import("@/components/sections/Detail/DetailHeroBillboard"));
 const CastsSection = dynamic(() => import("@/components/sections/Movie/Detail/Casts"));
 const RelatedSection = dynamic(() => import("@/components/sections/Movie/Detail/Related"));
+const MovieFacts = dynamic(() => import("@/components/sections/Movie/Detail/Facts"));
 
 const MovieDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
   const { id } = use(params);
@@ -51,6 +56,7 @@ const MovieDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
           ],
           crew: [],
         },
+        original_language: found.original_language || "en",
         images: {
           backdrops: [{ file_path: found.backdrop_path, aspect_ratio: 1.78, height: 1080, width: 1920, vote_average: 8.5, vote_count: 50 }],
           posters: [{ file_path: found.poster_path, aspect_ratio: 0.67, height: 1500, width: 1000, vote_average: 8.5, vote_count: 50 }],
@@ -71,22 +77,27 @@ const MovieDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     queryKey: ["movie-detail", id],
   });
 
+  useDocumentTitle(movie ? `${mutateMovieTitle(movie)} | ${siteConfig.name}` : siteConfig.name);
+
   if (isPending) {
-    return <Spinner size="lg" className="absolute-center" variant="simple" />;
+    return (
+      <div className="relative h-[62dvh] min-h-[420px] w-full overflow-hidden bg-[#0c0c0e] sm:h-[70dvh] lg:h-[78dvh]">
+        <Skeleton className="size-full rounded-none opacity-20" />
+      </div>
+    );
   }
 
   if (!movie) notFound();
 
   return (
-    <div className="flex flex-col gap-10 w-full overflow-x-hidden">
+    <div className="flex w-full flex-col overflow-x-hidden">
       <Suspense fallback={<Spinner size="lg" className="absolute-center" variant="simple" />}>
-        {/* Full-bleed Home-Style Netflix Hero Billboard */}
         <DetailHeroBillboard media={movie} type="movie" />
 
-        {/* Details & Recommended Rails */}
-        <div className="mx-auto max-w-7xl 2xl:max-w-[1800px] w-full px-4 md:px-12 flex flex-col gap-12 pb-16">
-          <CastsSection casts={movie.credits.cast as Cast[]} />
-          <PhotosSection images={movie.images.backdrops as Image[]} />
+        <div className="relative z-10 flex flex-col gap-8 pt-2 pb-16 md:gap-11">
+          <MovieFacts movie={movie} />
+          <CastsSection casts={(movie.credits?.cast || []) as Cast[]} />
+          <PhotosSection images={movie.images.backdrops as Image[]} heading="row" />
           <RelatedSection movie={movie} />
         </div>
       </Suspense>
