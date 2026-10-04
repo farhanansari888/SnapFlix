@@ -1,25 +1,12 @@
+"use client";
+
 import { forwardRef, memo, useMemo, useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Link,
-  Select,
-  SelectItem,
-  Input,
-  ScrollShadow,
-  Tabs,
-  Tab,
-  Tooltip,
-} from "@heroui/react";
 import { Season } from "tmdb-ts";
-import { Grid, List, Search, SortAlpha } from "@/utils/icons";
-import { useDebouncedValue, useDisclosure } from "@mantine/hooks";
+import { useDebouncedValue } from "@mantine/hooks";
 import dynamic from "next/dynamic";
-import IconButton from "@/components/ui/button/IconButton";
-import SectionTitle from "@/components/ui/other/SectionTitle";
-import { titleCase } from "string-ts";
+import RowHeader from "@/components/ui/other/RowHeader";
+import { cn } from "@/utils/helpers";
+
 const TvShowEpisodesSelection = dynamic(() => import("./Episodes"));
 
 interface Props {
@@ -28,76 +15,78 @@ interface Props {
 }
 
 const TvShowsSeasonsSelection = forwardRef<HTMLElement, Props>(({ id, seasons }, ref) => {
-  const FILTERED_SEASONS = useMemo(() => seasons.filter((s) => s.season_number > 0), [seasons]);
-  const [sortedByName, { toggle, close }] = useDisclosure(false);
+  const ordered = useMemo(
+    () => [...(seasons || [])].sort((a, b) => a.season_number - b.season_number),
+    [seasons],
+  );
   const [search, setSearch] = useState("");
   const [searchQuery] = useDebouncedValue(search, 300);
   const [layout, setLayout] = useState<"list" | "grid">("list");
-  const [seasonNumber, setSeasonNumber] = useState(() =>
-    FILTERED_SEASONS[0]?.season_number?.toString() || "1",
+  const [sortedByName, setSortedByName] = useState(false);
+  const [seasonNumber, setSeasonNumber] = useState(
+    () => ordered.find((season) => season.season_number > 0)?.season_number ?? ordered[0]?.season_number ?? 1,
   );
 
+  if (!ordered.length) return null;
+
   return (
-    <section ref={ref} id="seasons-episodes" className="z-3 flex flex-col gap-2">
-      <SectionTitle color="warning">Season & Episode</SectionTitle>
-      <Card className="sm:p-3">
-        <CardHeader className="grid grid-cols-1 grid-rows-[1fr_auto] gap-3 md:grid-cols-[1fr_1fr_auto_auto]">
-          <Select
-            aria-label="Seasons"
-            selectedKeys={[seasonNumber]}
-            disallowEmptySelection={true}
-            classNames={{ trigger: "border-2 border-foreground-200" }}
-            onChange={(e) => {
-              close();
-              setSearch("");
-              setSeasonNumber(e.target.value);
-            }}
-          >
-            {FILTERED_SEASONS.map(({ season_number, name }) => (
-              <SelectItem key={season_number.toString()}>{name}</SelectItem>
-            ))}
-          </Select>
-          <Input
-            isClearable
-            aria-label="Search Episodes"
-            placeholder="Search episodes..."
-            value={search}
-            onValueChange={setSearch}
-            startContent={<Search />}
-            classNames={{ inputWrapper: "border-2 border-foreground-200" }}
-          />
-          <Tooltip content={titleCase(layout)}>
-            <Tabs
-              color="warning"
-              aria-label="Layout Select"
-              size="sm"
-              classNames={{ tabList: "border-2 border-foreground-200" }}
-              onSelectionChange={(value) => setLayout(value as typeof layout)}
-              selectedKey={layout}
+    <section ref={ref} id="seasons-episodes" className="flex flex-col gap-3 px-4 md:px-12">
+      <RowHeader title="Episodes" />
+      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        {ordered.map((season) => {
+          const active = season.season_number === seasonNumber;
+          const label = season.season_number === 0 ? "Specials" : season.name || `Season ${season.season_number}`;
+          return (
+            <button
+              key={season.id || season.season_number}
+              type="button"
+              onClick={() => {
+                setSeasonNumber(season.season_number);
+                setSearch("");
+                setSortedByName(false);
+              }}
+              className={cn(
+                "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition",
+                active ? "bg-white text-black" : "sf-chip text-white/80 hover:text-white",
+              )}
             >
-              <Tab key="list" title={<List />} />
-              <Tab key="grid" title={<Grid />} />
-            </Tabs>
-          </Tooltip>
-          <IconButton
-            tooltip="Sort by name"
-            className="p-2"
-            icon={<SortAlpha />}
-            onPress={toggle}
-            color={sortedByName ? "warning" : undefined}
-            variant={sortedByName ? "shadow" : "faded"}
-          />
-        </CardHeader>
-        <CardBody>
-          <ScrollShadow className="h-[600px] py-2 pr-2 sm:pr-3">
-            <TvShowEpisodesSelection
-              id={id}
-              seasonNumber={Number(seasonNumber)}
-              filters={{ searchQuery, sortedByName, layout }}
-            />
-          </ScrollShadow>
-        </CardBody>
-      </Card>
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search episodes"
+          aria-label="Search episodes"
+          className="sf-chip h-11 min-w-0 flex-1 rounded-full px-4 text-sm text-white outline-none placeholder:text-white/40"
+        />
+        <button
+          type="button"
+          onClick={() => setLayout((value) => (value === "list" ? "grid" : "list"))}
+          className="sf-chip h-11 shrink-0 rounded-full px-3 text-xs font-semibold text-white"
+        >
+          {layout === "list" ? "Grid" : "List"}
+        </button>
+        <button
+          type="button"
+          aria-pressed={sortedByName}
+          onClick={() => setSortedByName((value) => !value)}
+          className={cn(
+            "sf-chip h-11 shrink-0 rounded-full px-3 text-xs font-semibold",
+            sortedByName ? "bg-white text-black" : "text-white",
+          )}
+        >
+          A-Z
+        </button>
+      </div>
+      <TvShowEpisodesSelection
+        id={id}
+        seasonNumber={seasonNumber}
+        filters={{ searchQuery, sortedByName, layout }}
+      />
     </section>
   );
 });

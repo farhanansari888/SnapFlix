@@ -4,6 +4,7 @@ import Carousel from "@/components/ui/wrapper/Carousel";
 import ResumeCard from "./Cards/Resume";
 import { useQuery } from "@tanstack/react-query";
 import { getUserHistories } from "@/actions/histories";
+import RowHeader from "@/components/ui/other/RowHeader";
 import type { HistoryDetail } from "@/types/movie";
 
 const ContinueWatching: React.FC = () => {
@@ -67,9 +68,7 @@ const ContinueWatching: React.FC = () => {
 
   return (
     <section id="continue-watching" className="flex flex-col gap-2 min-h-[220px] px-4 md:px-12">
-      <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-wide text-white">
-        Continue Watching
-      </h2>
+      <RowHeader title="Continue watching" />
       <Carousel>
         {list.map((media) => (
           <div

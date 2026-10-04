@@ -1,20 +1,25 @@
 "use client";
 
+import { getTvDetails } from "@/actions/catalog";
 import { tmdb } from "@/api/tmdb";
 import { Params } from "@/types";
-import { Spinner } from "@heroui/react";
-import { useScrollIntoView } from "@mantine/hooks";
+import { siteConfig } from "@/config/site";
+import { mutateTvShowTitle } from "@/utils/movies";
+import { Skeleton } from "@heroui/react";
+import { useDocumentTitle, useScrollIntoView } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
 import dynamic from "next/dynamic";
 import { NextPage } from "next";
-import { MOCK_TV_SHOWS } from "@/utils/mockData";
+import Footer from "@/components/ui/layout/Footer";
+
 const PhotosSection = dynamic(() => import("@/components/ui/other/PhotosSection"));
 const TvShowRelatedSection = dynamic(() => import("@/components/sections/TV/Details/Related"));
 const TvShowCastsSection = dynamic(() => import("@/components/sections/TV/Details/Casts"));
 const DetailHeroBillboard = dynamic(() => import("@/components/sections/Detail/DetailHeroBillboard"));
 const TvShowsSeasonsSelection = dynamic(() => import("@/components/sections/TV/Details/Seasons"));
+const SeriesFacts = dynamic(() => import("@/components/sections/TV/Details/Facts"));
 
 const TVShowDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
   const { id } = use(params);
@@ -22,13 +27,12 @@ const TVShowDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     duration: 500,
   });
 
-  const {
-    data: tv,
-    isPending,
-  } = useQuery({
+  const { data: result, isPending } = useQuery({
     queryFn: async () => {
+      const serverResult = await getTvDetails(Number(id));
+      if ("data" in serverResult || serverResult.error === "not-found") return serverResult;
       try {
-        const res = await tmdb.tvShows.details(id, [
+        const res = await tmdb.tvShows.details(Number(id), [
           "images",
           "videos",
           "credits",
@@ -38,84 +42,53 @@ const TVShowDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
           "reviews",
           "watch/providers",
         ]);
-        if (res && res.id) return res;
+        if (res?.id) return { data: res };
       } catch (err) {
-        console.warn("TMDB error on tv show detail page, using fallback:", err);
+        console.warn("TMDB series details failed", err);
       }
-      const found = MOCK_TV_SHOWS.find((t) => t.id.toString() === id.toString()) || MOCK_TV_SHOWS[0];
-      return {
-        ...found,
-        id: Number(id),
-        credits: {
-          cast: [
-            { id: 1, name: "Lead Character", character: "Main Cast", profile_path: "/b0vdub8m4vS2aWz2V0Wc9c5L3jS.jpg" },
-            { id: 2, name: "Supporting Star", character: "Key Character", profile_path: "/eO0al59qpKu79WqB37bK5uR2m3y.jpg" },
-          ],
-          crew: [],
-        },
-        images: {
-          backdrops: [{ file_path: found.backdrop_path, aspect_ratio: 1.78, height: 1080, width: 1920, vote_average: 8.5, vote_count: 50 }],
-          posters: [{ file_path: found.poster_path, aspect_ratio: 0.67, height: 1500, width: 1000, vote_average: 8.5, vote_count: 50 }],
-          logos: [],
-        },
-        videos: { results: [] },
-        keywords: { results: [] },
-        recommendations: { results: MOCK_TV_SHOWS.filter((t) => t.id !== Number(id)) },
-        similar: { results: MOCK_TV_SHOWS.filter((t) => t.id !== Number(id)) },
-        reviews: { results: [] },
-        "watch/providers": { results: {} },
-        seasons: [
-          {
-            id: 1,
-            name: "Season 1",
-            season_number: 1,
-            episode_count: 10,
-            air_date: "2024-01-01",
-            overview: "Season 1 of SnapFlix series.",
-            poster_path: found.poster_path,
-          },
-        ],
-        number_of_seasons: 1,
-        number_of_episodes: 10,
-        genres: [{ id: 18, name: "Drama" }, { id: 10765, name: "Sci-Fi & Fantasy" }],
-        tagline: "Stream now exclusively on SnapFlix",
-      } as any;
+      return serverResult;
     },
     queryKey: ["tv-show-detail", id],
   });
+  const tv = result && "data" in result ? result.data : null;
+
+  useDocumentTitle(tv ? `${mutateTvShowTitle(tv)} | ${siteConfig.name}` : siteConfig.name);
 
   if (isPending) {
     return (
-      <div className="mx-auto max-w-5xl">
-        <Spinner size="lg" className="absolute-center" color="danger" variant="simple" />
+      <div className="relative h-[62dvh] min-h-[420px] w-full overflow-hidden bg-[#0c0c0e] sm:h-[70dvh] lg:h-[78dvh]">
+        <Skeleton className="size-full rounded-none opacity-20" />
       </div>
     );
   }
 
-  if (!tv) notFound();
+  if (result && "error" in result && result.error === "not-found") notFound();
+  if (!tv) {
+    return (
+      <p className="px-6 py-24 text-center text-sm text-white/70">
+        This series could not be loaded from TMDB.
+      </p>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-10 w-full overflow-x-hidden">
-      <Suspense
-        fallback={
-          <Spinner size="lg" className="absolute-center" color="warning" variant="simple" />
-        }
-      >
-        {/* Full-bleed Home-Style Netflix Hero Billboard */}
+    <div className="flex w-full flex-col overflow-x-hidden">
+      <Suspense fallback={<Skeleton className="h-[62dvh] w-full rounded-none opacity-20" />}>
         <DetailHeroBillboard
           media={tv}
           type="tv"
-          onViewEpisodesClick={() => scrollIntoView({ alignment: "center" })}
+          onViewEpisodesClick={() => scrollIntoView({ alignment: "start" })}
         />
 
-        {/* Episodes, Cast, Photos & Related Rails */}
-        <div className="mx-auto max-w-7xl 2xl:max-w-[1800px] w-full px-4 md:px-12 flex flex-col gap-12 pb-16">
-          <TvShowsSeasonsSelection ref={targetRef} id={id} seasons={tv.seasons} />
-          <TvShowCastsSection casts={tv.credits.cast} />
-          <PhotosSection images={tv.images.backdrops} type="tv" />
+        <div className="relative z-10 flex flex-col gap-8 pt-2 pb-16 md:gap-11">
+          <SeriesFacts show={tv} />
+          <TvShowsSeasonsSelection ref={targetRef} id={Number(id)} seasons={tv.seasons || []} />
+          <TvShowCastsSection casts={tv.credits?.cast || []} />
+          <PhotosSection images={tv.images?.backdrops || []} type="tv" heading="row" />
           <TvShowRelatedSection tv={tv} />
         </div>
       </Suspense>
+      <Footer />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { cn } from "@/utils/helpers";
 import { Skeleton, Tooltip } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import RowHeader from "@/components/ui/other/RowHeader";
 import { FaPlay } from "react-icons/fa6";
 import HoverPosterCard from "../Movie/Cards/Hover";
 import TvShowHoverCard from "../TV/Cards/Hover";
@@ -56,21 +57,12 @@ const Top10Row: React.FC<Top10RowProps> = ({ contentType: propContentType }) => 
   return (
     <section className="flex flex-col gap-2 min-h-[280px]">
       {/* Netflix Section Title */}
-      <div className="flex items-center justify-between px-4 md:px-12">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-black tracking-wide text-white flex items-center gap-2 group cursor-pointer">
-          <span className="text-[#E50914]">Top 10</span>
-          <span>{isTv ? "TV Shows Today" : "Movies Today"}</span>
-          <span className="text-xs text-[#E50914] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            Explore All &gt;
-          </span>
-        </h2>
-        <Link
-          href={`/discover?type=todayTrending${isTv ? "&content=tv" : ""}`}
-          className="text-xs font-semibold text-gray-400 hover:text-white transition-colors"
-        >
-          See All &gt;
-        </Link>
-      </div>
+      <RowHeader
+        accent="Top 10"
+        title={isTv ? "series today" : "movies today"}
+        href={`/discover?type=todayTrending${isTv ? "&content=tv" : ""}`}
+        className="px-4 md:px-12"
+      />
 
       {isPending && top10.length === 0 ? (
         <div className="flex gap-4 overflow-hidden px-4 md:px-12">
@@ -114,19 +106,19 @@ const Top10Row: React.FC<Top10RowProps> = ({ contentType: propContentType }) => 
                       {/* Netflix Stylized Giant Ranking Number */}
                       <span
                         className={cn(
-                          "netflix-number text-[110px] sm:text-[140px] md:text-[170px] leading-none select-none tracking-tighter -mr-4 sm:-mr-6 z-0 pointer-events-none drop-shadow-xl",
+                          "netflix-number pointer-events-none z-0 -mr-3 text-[76px] leading-none tracking-tighter select-none drop-shadow-xl sm:-mr-5 sm:text-[120px] md:text-[156px]",
                           BebasNeue.className,
                         )}
                         style={{
-                          WebkitTextStroke: "4px #555555",
-                          color: "#141414",
+                          WebkitTextStroke: "3px #6a6a6a",
+                          color: "#0c0c0e",
                         }}
                       >
                         {rank}
                       </span>
 
                       {/* Poster Card */}
-                      <div className="relative z-10 aspect-2/3 h-[180px] sm:h-[220px] md:h-[250px] w-auto overflow-hidden rounded-md border-2 border-transparent bg-[#1f1f1f] shadow-2xl transition-all duration-300 group-hover:border-[#E50914] group-hover:shadow-[0_8px_30px_rgba(229,9,20,0.4)]">
+                      <div className="relative z-10 aspect-2/3 h-[168px] w-auto overflow-hidden rounded-[1.05rem] border border-white/16 bg-[#161618] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_16px_32px_rgba(0,0,0,0.4)] transition-all duration-300 group-hover:border-white/40 sm:h-[210px] md:h-[240px]">
                         {/* Netflix Red Top 10 Ribbon */}
                         <div className="absolute top-0 right-0 z-20 bg-[#E50914] text-white text-[9px] font-black px-1.5 py-0.5 rounded-bl-sm uppercase tracking-wider shadow-md">
                           TOP 10

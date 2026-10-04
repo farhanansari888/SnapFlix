@@ -139,9 +139,11 @@ const LibraryList = () => {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b border-white/10">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                My Library
-              </h1>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-balance text-white sm:text-3xl md:text-4xl">
+                  My library
+                </h1>
+              </div>
               {hasItems && (
                 <span className="text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
                   {sortedWatchlist.length} {sortedWatchlist.length === 1 ? "item" : "items"}

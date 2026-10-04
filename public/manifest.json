@@ -3,7 +3,7 @@
   "short_name": "SnapFlix",
   "description": "Watch Movies & TV Shows Online on SnapFlix - Your Private Streaming Platform.",
   "theme_color": "#E50914",
-  "background_color": "#141414",
+  "background_color": "#0c0c0e",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

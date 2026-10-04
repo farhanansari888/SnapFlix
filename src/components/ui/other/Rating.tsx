@@ -9,7 +9,7 @@ export interface RatingProps {
 const Rating: React.FC<RatingProps> = ({ rate = 0, count = 0 }) => {
   return (
     <div className="flex items-center gap-1 font-semibold text-warning-500">
-      <Star />
+      <Star className="size-3.5 shrink-0" />
       <p>
         {rate.toFixed(1)} {count > 0 && `(${formatNumber(count)})`}
       </p>

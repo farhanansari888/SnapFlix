@@ -63,8 +63,8 @@ const AuthLoginForm: React.FC<AuthFormProps> = ({ setForm }) => {
   );
 
   const getButtonText = useCallback(() => {
-    if (isSubmitting) return "Signing In...";
-    if (isVerifying) return "Verifying...";
+    if (isSubmitting) return "Signing in…";
+    if (isVerifying) return "Verifying…";
     return "Sign In";
   }, [isSubmitting, isVerifying]);
 

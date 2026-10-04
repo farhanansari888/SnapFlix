@@ -7,7 +7,7 @@ import { MOCK_MOVIES } from "@/utils/mockData";
 import { Skeleton } from "@heroui/react";
 import { useInViewport } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import RowHeader from "@/components/ui/other/RowHeader";
 import { kebabCase } from "string-ts";
 import { Movie } from "tmdb-ts/dist/types";
 
@@ -51,25 +51,7 @@ const MovieHomeList: React.FC<QueryList<Movie>> = ({ query, name, param }) => {
         </div>
       ) : (
         <div className="z-3 flex flex-col gap-2">
-          <div className="flex grow items-center justify-between px-4 md:px-12">
-            <Link
-              href={`/discover?type=${param}`}
-              className="group flex items-center gap-2"
-            >
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-wide text-white group-hover:text-gray-200 transition-colors">
-                {name}
-              </h2>
-              <span className="text-xs font-bold text-[#E50914] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                Explore All &gt;
-              </span>
-            </Link>
-            <Link
-              href={`/discover?type=${param}`}
-              className="text-xs font-semibold text-gray-400 hover:text-white transition-colors"
-            >
-              See All &gt;
-            </Link>
-          </div>
+          <RowHeader title={name} href={`/discover?type=${param}`} className="px-4 md:px-12" />
           <div className="px-4 md:px-12">
             <Carousel>
               {results.map((movie) => (

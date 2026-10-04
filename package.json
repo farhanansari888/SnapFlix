@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "build:worker": "opennextjs-cloudflare build",
+    "preview": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "start": "next start --hostname 0.0.0.0",
     "lint": "next lint",
     "sb-start": "supabase start --debug --ignore-health-check",
     "sb-stop": "supabase stop --debug --all",
@@ -31,7 +34,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.12",
-    "next": "16.2.1",
+    "next": "^16.3.6",
     "next-themes": "^0.4.6",
     "nuqs": "^2.4.3",
     "react": "19.2.4",
@@ -50,18 +53,20 @@
   },
   "devDependencies": {
     "@iconify/react": "^6.0.0",
+    "@opennextjs/cloudflare": "^1.20.6",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/node": "^20",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "eslint": "^9.33.0",
-    "eslint-config-next": "16.2.1",
+    "eslint-config-next": "^16.3.6",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4.1.12",
     "typescript": "^5",
-    "webpack": "^5.101.2"
+    "webpack": "^5.101.2",
+    "wrangler": "^4.142.0"
   },
   "prettier": {
     "proseWrap": "never",
