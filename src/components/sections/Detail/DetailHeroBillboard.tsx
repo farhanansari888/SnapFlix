@@ -32,7 +32,10 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
   const releaseYear = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.getFullYear() : null;
   const playHref = isTv ? `/watch/tv/${media.id}/1/1` : `/watch/movie/${media.id}`;
   const bgUrl = getImageUrl(media.backdrop_path || media.images?.backdrops?.[0]?.file_path, "backdrop", true);
-  const matchPercentage = Math.min(99, Math.round((media.vote_average || 8.2) * 10 + 8));
+  const matchPercentage =
+    typeof media.vote_average === "number" && media.vote_average > 0
+      ? Math.min(99, Math.round(media.vote_average * 10))
+      : null;
   const runtimeText = !isTv && media.runtime ? movieDurationString(media.runtime) : null;
   const seasonsText =
     isTv && media.number_of_seasons
@@ -69,9 +72,17 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
 
       <div className="absolute inset-x-4 bottom-8 z-20 flex max-w-xl flex-col gap-2 sm:inset-x-8 sm:bottom-10 md:left-12 md:gap-3">
         <p className="text-xs font-semibold text-white/80 sm:text-sm">
-          <span className="text-[#46d369]">{matchPercentage}% match</span>
-          <span className="mx-2 text-white/35">·</span>
-          {isTv ? "Series" : "Film"}
+          {matchPercentage ? (
+            <span className="text-[#46d369]">{matchPercentage}% match</span>
+          ) : (
+            <span>{isTv ? "Series" : "Film"}</span>
+          )}
+          {matchPercentage && (
+            <>
+              <span className="mx-2 text-white/35">·</span>
+              {isTv ? "Series" : "Film"}
+            </>
+          )}
         </p>
 
         <h1 className="line-clamp-2 text-[1.7rem] leading-[1.05] font-black tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-6xl">
@@ -80,16 +91,14 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
 
         <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/75 sm:text-sm">
           {releaseYear && <span>{releaseYear}</span>}
-          <span className="rounded-full border border-white/25 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-            {media.adult ? "18+" : "16+"}
-          </span>
+          {media.adult && (
+            <span className="rounded-full border border-white/25 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+              18+
+            </span>
+          )}
           {runtimeText && <span>{runtimeText}</span>}
           {seasonsText && <span>{seasonsText}</span>}
         </div>
-
-        <p className="line-clamp-2 max-w-lg text-sm leading-relaxed text-white/80 md:text-base">
-          {media.overview || "Stream this title on SnapFlix."}
-        </p>
 
         <div className="flex items-center gap-2 overflow-x-auto pt-1 no-scrollbar">
           <Link

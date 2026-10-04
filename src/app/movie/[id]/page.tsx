@@ -3,6 +3,7 @@
 import { Suspense, use } from "react";
 import { Spinner } from "@heroui/spinner";
 import { useQuery } from "@tanstack/react-query";
+import { getMovieDetails } from "@/actions/catalog";
 import { tmdb } from "@/api/tmdb";
 import { Cast } from "tmdb-ts/dist/types/credits";
 import { notFound } from "next/navigation";
@@ -10,7 +11,6 @@ import { Image } from "tmdb-ts";
 import dynamic from "next/dynamic";
 import { Params } from "@/types";
 import { NextPage } from "next";
-import { MOCK_MOVIES } from "@/utils/mockData";
 import { mutateMovieTitle } from "@/utils/movies";
 import { siteConfig } from "@/config/site";
 import { useDocumentTitle } from "@mantine/hooks";
@@ -26,12 +26,14 @@ const MovieDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
   const { id } = use(params);
 
   const {
-    data: movie,
+    data: result,
     isPending,
   } = useQuery({
     queryFn: async () => {
+      const serverResult = await getMovieDetails(Number(id));
+      if ("data" in serverResult || serverResult.error === "not-found") return serverResult;
       try {
-        const res = await tmdb.movies.details(id, [
+        const res = await tmdb.movies.details(Number(id), [
           "images",
           "videos",
           "credits",
@@ -41,41 +43,16 @@ const MovieDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
           "reviews",
           "watch/providers",
         ]);
-        if (res && res.id) return res;
+        if (res?.id) return { data: res };
       } catch (err) {
-        console.warn("TMDB error on movie detail page, using fallback:", err);
+        console.warn("TMDB movie details failed", err);
       }
-      const found = MOCK_MOVIES.find((m) => m.id.toString() === id.toString()) || MOCK_MOVIES[0];
-      return {
-        ...found,
-        id: Number(id),
-        credits: {
-          cast: [
-            { id: 1, name: "Lead Actor", character: "Main Protagonist", profile_path: "/b0vdub8m4vS2aWz2V0Wc9c5L3jS.jpg" },
-            { id: 2, name: "Co-Star", character: "Key Ally", profile_path: "/eO0al59qpKu79WqB37bK5uR2m3y.jpg" },
-          ],
-          crew: [],
-        },
-        original_language: found.original_language || "en",
-        images: {
-          backdrops: [{ file_path: found.backdrop_path, aspect_ratio: 1.78, height: 1080, width: 1920, vote_average: 8.5, vote_count: 50 }],
-          posters: [{ file_path: found.poster_path, aspect_ratio: 0.67, height: 1500, width: 1000, vote_average: 8.5, vote_count: 50 }],
-          logos: [],
-        },
-        videos: { results: [] },
-        keywords: { keywords: [] },
-        recommendations: { results: MOCK_MOVIES.filter((m) => m.id !== Number(id)) },
-        similar: { results: MOCK_MOVIES.filter((m) => m.id !== Number(id)) },
-        reviews: { results: [] },
-        "watch/providers": { results: {} },
-        genres: [{ id: 28, name: "Action" }, { id: 878, name: "Sci-Fi" }],
-        runtime: 148,
-        status: "Released",
-        tagline: "Stream now on SnapFlix",
-      } as any;
+      return serverResult;
     },
     queryKey: ["movie-detail", id],
   });
+
+  const movie = result && "data" in result ? result.data : null;
 
   useDocumentTitle(movie ? `${mutateMovieTitle(movie)} | ${siteConfig.name}` : siteConfig.name);
 
@@ -87,7 +64,14 @@ const MovieDetailPage: NextPage<Params<{ id: number }>> = ({ params }) => {
     );
   }
 
-  if (!movie) notFound();
+  if (result && "error" in result && result.error === "not-found") notFound();
+  if (!movie) {
+    return (
+      <p className="px-6 py-24 text-center text-sm text-white/70">
+        This film could not be loaded from TMDB.
+      </p>
+    );
+  }
 
   return (
     <div className="flex w-full flex-col overflow-x-hidden">

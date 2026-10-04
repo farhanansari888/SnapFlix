@@ -1,3 +1,4 @@
+import { getTvSeason } from "@/actions/catalog";
 import { tmdb } from "@/api/tmdb";
 import useBreakpoints from "@/hooks/useBreakpoints";
 import { cn, formatDate, isEmpty } from "@/utils/helpers";
@@ -31,34 +32,21 @@ const TvShowEpisodesSelection: React.FC<TvShowEpisodesSelectionProps> = ({
   seasonNumber,
   filters: { searchQuery, sortedByName, layout } = {},
 }) => {
-  const { data, isPending } = useQuery({
+  const { data: result, isPending, isError } = useQuery({
     queryFn: async () => {
+      const serverResult = await getTvSeason(id, seasonNumber);
+      if ("data" in serverResult || serverResult.error === "not-found") return serverResult;
       try {
         const res = await tmdb.tvShows.season(id, seasonNumber);
-        if (res && res.episodes && res.episodes.length > 0) return res;
+        if (res?.episodes) return { data: res };
       } catch (err) {
-        console.warn("TMDB error on season episodes, using fallback:", err);
+        console.warn("TMDB season failed", err);
       }
-      return {
-        id: Number(id),
-        name: `Season ${seasonNumber}`,
-        season_number: Number(seasonNumber),
-        episodes: Array.from({ length: 10 }).map((_, i) => ({
-          id: i + 1,
-          name: `Episode ${i + 1}`,
-          overview: "Stream this episode now exclusively on SnapFlix.",
-          episode_number: i + 1,
-          season_number: Number(seasonNumber),
-          air_date: "2024-01-01",
-          still_path: "/56v2KjBlU4XaOv9rVYEQypROD7P.jpg",
-          vote_average: 8.5,
-          vote_count: 350,
-          runtime: 52,
-        })),
-      } as any;
+      return serverResult;
     },
     queryKey: ["tv-show-episodes", id, seasonNumber],
   });
+  const data = result && "data" in result ? result.data : null;
 
   if (isPending) {
     return (
@@ -68,7 +56,9 @@ const TvShowEpisodesSelection: React.FC<TvShowEpisodesSelectionProps> = ({
     );
   }
 
-  if (!data || !data.episodes) return null;
+  if (isError || (result && "error" in result) || !data?.episodes) {
+    return <p className="py-6 text-sm text-white/60">Episodes could not be loaded from TMDB.</p>;
+  }
 
   const EPISODES: Episode[] = (data.episodes as Episode[])
     .filter((episode: Episode) =>
@@ -124,9 +114,9 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
       href={href}
       shadow="none"
       className={cn(
-        "group motion-preset-blur-right border-foreground-200 bg-foreground-100 motion-duration-300 grid grid-cols-[auto_1fr] gap-3 border-2 transition-colors",
+        "group motion-preset-blur-right motion-duration-300 grid grid-cols-[auto_1fr] gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-colors",
         {
-          "hover:border-warning hover:bg-foreground-200": !isNotReleased,
+          "hover:bg-white/10": !isNotReleased,
           "cursor-not-allowed opacity-50": isNotReleased,
           "motion-preset-slide-left": isOdd && withAnimation,
           "motion-preset-slide-right": !isOdd && withAnimation,
@@ -202,9 +192,9 @@ const EpisodeGridCard: React.FC<EpisodeCardProps> = ({ episode, id }) => {
       href={href}
       shadow="none"
       className={cn(
-        "group motion-preset-focus border-foreground-200 bg-foreground-100 border-2 transition-colors",
+        "group motion-preset-focus overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-colors",
         {
-          "hover:border-warning hover:bg-foreground-200": !isNotReleased,
+          "hover:bg-white/10": !isNotReleased,
           "cursor-not-allowed opacity-50": isNotReleased,
         },
       )}
