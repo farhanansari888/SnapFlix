@@ -21,7 +21,7 @@ const HomePage: NextPage<HomePageProps> = async ({ searchParams }) => {
     <div className="flex flex-col">
       <NetflixHeroBillboard contentType={content === "tv" ? "tv" : "movie"} />
 
-      <div className="relative z-10 mt-3 flex flex-col gap-5 md:-mt-10 md:gap-11">
+      <div className="relative z-10 flex flex-col gap-8 md:-mt-10 md:gap-11">
         <ContinueWatching />
         <HomePageList />
       </div>
