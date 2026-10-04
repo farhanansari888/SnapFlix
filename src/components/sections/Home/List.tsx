@@ -19,13 +19,13 @@ const HomePageList: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col gap-8 pb-16">
-      {/* Netflix Content Type Pills */}
-      <div className="flex justify-center md:justify-start px-4 md:px-12">
+    <div className="flex flex-col gap-3 pb-4 md:gap-8 md:pb-16">
+      {/* Content type pills */}
+      <div className="flex justify-center px-4 md:justify-start md:px-12">
         <ContentTypeSelection />
       </div>
 
-      <div className="relative flex min-h-32 flex-col gap-8 md:gap-12">
+      <div className="relative flex min-h-32 flex-col gap-4 md:gap-12">
         <Suspense
           fallback={
             <Spinner

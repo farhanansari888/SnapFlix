@@ -194,6 +194,30 @@
   }
 }
 
+.hero-title {
+  font-size: 1.35rem;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+@media (min-width: 640px) {
+  .hero-title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-title {
+    font-size: 3.75rem;
+  }
+}
+
 .hero-ken {
   animation: hero-ken 16s ease-out both;
   transform-origin: center 18%;

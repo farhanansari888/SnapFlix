@@ -48,12 +48,12 @@ const MoviePosterCard: React.FC<MoviePosterCardProps> = ({ movie, variant = "ful
       >
         <Link href={`/movie/${movie.id}`} {...longPress()} className="block">
           {variant === "full" && (
-            <div className="poster-frame group motion-preset-focus aspect-2/3 h-[250px] text-white transition duration-300 hover:outline-[#E50914]/80 hover:shadow-[0_16px_36px_rgba(229,9,20,0.28)] md:h-[300px]">
+            <div className="poster-frame group motion-preset-focus aspect-2/3 h-[156px] text-white transition duration-300 hover:outline-white/40 sm:h-[220px] md:h-[300px]">
               <Image
                 alt={title}
                 src={posterImage}
                 radius="none"
-                className="z-0 aspect-2/3 h-[250px] object-cover object-center transition duration-500 group-hover:scale-105 md:h-[300px]"
+                className="z-0 aspect-2/3 h-[156px] object-cover object-center transition duration-500 group-hover:scale-105 sm:h-[220px] md:h-[300px]"
               />
               {movie.adult && (
                 <Chip color="danger" size="sm" variant="flat" className="absolute left-2 top-2 z-20">

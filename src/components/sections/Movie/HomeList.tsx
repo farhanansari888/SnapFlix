@@ -57,7 +57,7 @@ const MovieHomeList: React.FC<QueryList<Movie>> = ({ query, name, param }) => {
               {results.map((movie) => (
                 <div
                   key={movie.id}
-                  className="embla__slide flex min-h-fit max-w-fit items-center px-1 py-3"
+                  className="embla__slide flex min-h-fit max-w-fit items-center px-1 py-1 sm:py-3"
                 >
                   <MoviePosterCard movie={movie} />
                 </div>

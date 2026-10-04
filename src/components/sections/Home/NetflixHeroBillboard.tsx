@@ -131,7 +131,7 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
 
   if (isPending && (!heroItems || heroItems.length === 0)) {
     return (
-      <div className="relative h-[62dvh] min-h-[400px] max-h-[520px] sm:h-[70dvh] sm:min-h-[480px] sm:max-h-[640px] lg:h-[82dvh] lg:min-h-[560px] lg:max-h-[820px] 2xl:h-[80dvh] w-full overflow-hidden bg-[#0c0c0e]">
+      <div className="relative h-[40dvh] min-h-[280px] max-h-[300px] w-full overflow-hidden bg-[#0c0c0e] sm:h-[58dvh] sm:min-h-[420px] sm:max-h-[520px] lg:h-[78dvh] lg:min-h-[560px] lg:max-h-[820px]">
         <Skeleton className="size-full rounded-none opacity-20" />
         <div className="absolute bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 left-4 md:left-12 flex flex-col gap-3 max-w-xl z-20">
           <Skeleton className="h-5 w-28 sm:h-6 sm:w-36 rounded-sm opacity-40" />
@@ -152,7 +152,7 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
   return (
     <div
       className={cn(
-        "group/hero relative h-[62dvh] min-h-[400px] max-h-[520px] sm:h-[70dvh] sm:min-h-[480px] sm:max-h-[640px] lg:h-[82dvh] lg:min-h-[560px] lg:max-h-[820px] 2xl:h-[80dvh] w-full select-none overflow-hidden bg-[#0c0c0e]",
+        "group/hero relative h-[40dvh] min-h-[280px] max-h-[300px] w-full select-none overflow-hidden bg-[#0c0c0e] sm:h-[58dvh] sm:min-h-[420px] sm:max-h-[520px] lg:h-[78dvh] lg:min-h-[560px] lg:max-h-[820px]",
         paused && "hero-paused",
       )}
       onMouseEnter={() => setHoverPaused(true)}
@@ -220,13 +220,13 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
                 <div className="absolute top-0 inset-x-0 h-14 bg-linear-to-b from-black/20 to-transparent pointer-events-none z-10" />
 
                 {/* Slide Content */}
-                <div className="sf-glass sf-glass-mobile absolute right-3 bottom-[4.6rem] left-3 z-20 flex max-w-none flex-col gap-2 p-3.5 sm:right-4 sm:bottom-20 sm:left-4 sm:p-4 md:right-auto md:bottom-20 md:left-12 md:max-w-xl md:gap-3 md:p-0 lg:max-w-2xl">
+                <div className="sf-glass sf-glass-mobile absolute right-3 bottom-14 left-3 z-20 flex max-w-none flex-col gap-1.5 p-2.5 sm:right-4 sm:bottom-20 sm:left-4 sm:gap-2 sm:p-4 md:right-auto md:bottom-20 md:left-12 md:max-w-xl md:gap-3 md:p-0 lg:max-w-2xl">
                   {/* Netflix Brand Tagline / Badge */}
-                  <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex min-w-0 items-center gap-1.5 overflow-hidden sm:gap-2">
                     <div className="flex items-center justify-center h-4 w-3.5 sm:h-5 sm:w-4 rounded-xs bg-linear-to-b from-[#E50914] to-[#B81D24] shadow-xs">
                       <span className="text-[9px] sm:text-[11px] font-black text-white">S</span>
                     </div>
-                    <span className="text-[10px] sm:text-xs md:text-sm font-extrabold tracking-[0.18em] sm:tracking-[0.22em] text-white uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    <span className="truncate text-[10px] font-extrabold tracking-[0.12em] text-white uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] sm:text-xs sm:tracking-[0.22em] md:text-sm">
                       {isTv ? "SNAPFLIX ORIGINAL" : "SNAPFLIX FILM"}
                     </span>
                     <span className="bg-[#E50914] text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-[0_0_16px_rgba(229,9,20,0.45)]">
@@ -235,7 +235,7 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
                   </div>
 
                   {/* Title */}
-                  <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] line-clamp-2 leading-tight">
+                  <h1 className="hero-title line-clamp-1 text-white tracking-tight drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] sm:line-clamp-2">
                     {title}
                   </h1>
 
@@ -257,15 +257,15 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
                   </div>
 
                   {/* Overview */}
-                  <p className="line-clamp-1 max-w-lg text-xs leading-relaxed text-gray-200/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] sm:line-clamp-2 sm:text-sm md:line-clamp-3 md:text-base">
+                  <p className="hidden max-w-lg text-xs leading-relaxed text-gray-200/90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] sm:line-clamp-2 sm:block sm:text-sm md:line-clamp-3 md:text-base">
                     {item.overview || "Stream this blockbuster title now exclusively on SnapFlix."}
                   </p>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1 sm:pt-2">
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5 sm:gap-3 sm:pt-2">
                     <Link
                       href={playHref}
-                      className="group/btn flex min-h-11 items-center gap-1.5 sm:gap-2.5 rounded-full bg-white px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-bold text-black shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition-all duration-200 hover:bg-[#f4f4f4] active:scale-95 shrink-0"
+                      className="group/btn flex h-9 items-center gap-1.5 rounded-full bg-white px-3.5 text-xs font-bold text-black shadow-[0_10px_24px_rgba(0,0,0,0.35)] transition-all duration-200 hover:bg-[#f4f4f4] active:scale-95 shrink-0 sm:h-11 sm:gap-2.5 sm:px-6 sm:text-sm md:text-base"
                     >
                       <FaPlay className="text-xs sm:text-sm md:text-base transition-transform group-hover/btn:scale-110" />
                       <span>Play</span>
@@ -273,7 +273,7 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
 
                     <Link
                       href={detailHref}
-                      className="sf-chip flex min-h-11 items-center gap-1.5 sm:gap-2 rounded-full px-3.5 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-semibold text-white transition-all duration-200 hover:bg-white/20 active:scale-95 shrink-0"
+                      className="sf-chip flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-white transition-all duration-200 hover:bg-white/20 active:scale-95 shrink-0 sm:h-11 sm:gap-2 sm:px-6 sm:text-sm md:text-base"
                     >
                       <IoInformationCircleOutline size={18} className="sm:size-[22px]" />
                       <span>More Info</span>
@@ -291,12 +291,12 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
       </div>
 
       {/* Bottom Right: Clean Slide Indicators & Maturity Rating */}
-      <div className="absolute inset-x-3 bottom-3 z-30 flex items-center justify-between gap-2 sm:inset-x-4 sm:bottom-4 md:inset-x-auto md:right-12 md:bottom-20 md:justify-end md:gap-4">
+      <div className="absolute inset-x-3 bottom-2 z-30 flex items-center justify-between gap-2 sm:inset-x-4 sm:bottom-4 md:inset-x-auto md:right-12 md:bottom-20 md:justify-end md:gap-4">
         <button
           type="button"
           onClick={() => setManualPaused((value) => !value)}
           aria-pressed={manualPaused}
-          className="sf-chip min-h-10 rounded-full px-3 py-1.5 text-[11px] font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="sf-chip h-8 rounded-full px-3 text-[11px] font-semibold text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:h-10"
         >
           <span className="sm:hidden">{manualPaused ? "Play" : "Pause"}</span>
           <span className="hidden sm:inline">{manualPaused ? "Play slides" : "Pause slides"}</span>
