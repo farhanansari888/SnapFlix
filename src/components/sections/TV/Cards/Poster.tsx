@@ -19,7 +19,10 @@ interface TvShowPosterCardProps {
 
 const TvShowPosterCard: React.FC<TvShowPosterCardProps> = ({ tv, variant = "full" }) => {
   const [opened, handlers] = useDisclosure(false);
-  const releaseYear = new Date(tv.first_air_date).getFullYear();
+  // TMDB omits the first air date on some entries, guard against "NaN" years.
+  const releaseYear = tv.first_air_date
+    ? new Date(tv.first_air_date).getFullYear()
+    : undefined;
   const posterImage = getImageUrl(tv.poster_path);
   const title = mutateTvShowTitle(tv);
   const { mobile } = useBreakpoints();
@@ -111,7 +114,7 @@ const TvShowPosterCard: React.FC<TvShowPosterCardProps> = ({ tv, variant = "full
                 <p className="text-md truncate font-bold">{title}</p>
               </CardBody>
               <CardFooter className="justify-between pt-0 text-xs">
-                <p>{releaseYear}</p>
+                <p>{releaseYear ?? "—"}</p>
                 <Rating rate={tv.vote_average} />
               </CardFooter>
             </Card>

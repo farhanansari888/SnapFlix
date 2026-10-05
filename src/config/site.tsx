@@ -1,4 +1,4 @@
-import { tmdb } from "@/api/tmdb";
+import { getMovieList, getTrendingMovies, getTrendingTvShows, getTvList } from "@/actions/lists";
 import { SiteConfigType } from "@/types";
 import { BiSearchAlt2, BiSolidSearchAlt2 } from "react-icons/bi";
 import { GoHomeFill, GoHome } from "react-icons/go";
@@ -57,66 +57,67 @@ export const siteConfig: SiteConfigType = {
       icon: <HiComputerDesktop className="size-full" />,
     },
   ],
+  /**
+   * Every row is resolved by a server action, so the TMDB token never leaves
+   * the server and the responses are cached and shared between visitors.
+   */
   queryLists: {
     movies: [
       {
         name: "Today's Trending Movies",
-        query: () => tmdb.trending.trending("movie", "day"),
+        query: () => getTrendingMovies({ timeWindow: "day" }),
         param: "todayTrending",
       },
       {
         name: "This Week's Trending Movies",
-        query: () => tmdb.trending.trending("movie", "week"),
+        query: () => getTrendingMovies({ timeWindow: "week" }),
         param: "thisWeekTrending",
       },
       {
         name: "Popular Movies",
-        query: () => tmdb.movies.popular(),
+        query: () => getMovieList({ type: "popular" }),
         param: "popular",
       },
       {
         name: "Now Playing Movies",
-        query: () => tmdb.movies.nowPlaying(),
+        query: () => getMovieList({ type: "nowPlaying" }),
         param: "nowPlaying",
       },
       {
         name: "Upcoming Movies",
-        query: () => tmdb.movies.upcoming(),
+        query: () => getMovieList({ type: "upcoming" }),
         param: "upcoming",
       },
       {
         name: "Top Rated Movies",
-        query: () => tmdb.movies.topRated(),
+        query: () => getMovieList({ type: "topRated" }),
         param: "topRated",
       },
     ],
     tvShows: [
       {
         name: "Today's Trending TV Shows",
-        query: () => tmdb.trending.trending("tv", "day"),
+        query: () => getTrendingTvShows({ timeWindow: "day" }),
         param: "todayTrending",
       },
       {
         name: "This Week's Trending TV Shows",
-        query: () => tmdb.trending.trending("tv", "week"),
+        query: () => getTrendingTvShows({ timeWindow: "week" }),
         param: "thisWeekTrending",
       },
       {
         name: "Popular TV Shows",
-        // @ts-expect-error: Property 'adult' is missing in type 'PopularTvShowResult' but required in type 'TV'.
-        query: () => tmdb.tvShows.popular(),
+        query: () => getTvList({ type: "popular" }),
         param: "popular",
       },
       {
         name: "On The Air TV Shows",
-        // @ts-expect-error: Property 'adult' is missing in type 'OnTheAirResult' but required in type 'TV'.
-        query: () => tmdb.tvShows.onTheAir(),
+        query: () => getTvList({ type: "onTheAir" }),
         param: "onTheAir",
       },
       {
         name: "Top Rated TV Shows",
-        // @ts-expect-error: Property 'adult' is missing in type 'TopRatedTvShowResult' but required in type 'TV'.
-        query: () => tmdb.tvShows.topRated(),
+        query: () => getTvList({ type: "topRated" }),
         param: "topRated",
       },
     ],

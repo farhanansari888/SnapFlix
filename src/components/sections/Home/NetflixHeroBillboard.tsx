@@ -1,9 +1,12 @@
 "use client";
 
-import { tmdb } from "@/api/tmdb";
+import { getTrendingMovies, getTrendingTvShows } from "@/actions/lists";
 import BookmarkButton from "@/components/ui/button/BookmarkButton";
+import CatalogErrorState from "@/components/ui/other/CatalogErrorState";
+import PopcornTvLoader from "@/components/ui/other/PopcornTvLoader";
+import { CatalogListResponse } from "@/types";
 import { SavedMovieDetails } from "@/types/movie";
-import { MOCK_MOVIES, MOCK_TV_SHOWS } from "@/utils/mockData";
+import { unwrapCatalog } from "@/utils/catalog";
 import { getImageUrl, mutateMovieTitle, mutateTvShowTitle } from "@/utils/movies";
 import { Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaChevronLeft, FaChevronRight, FaPlay } from "react-icons/fa6";
 import { IoInformationCircleOutline, IoPause } from "react-icons/io5";
 import { useSearchParams } from "next/navigation";
+import { Movie, TV } from "tmdb-ts/dist/types";
 import { cn } from "@/utils/helpers";
 
 interface NetflixHeroBillboardProps {
@@ -41,47 +45,23 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
     skipSnaps: false,
   });
 
-  const { data, isPending } = useQuery({
+  const { data, isPending, isError, error, refetch, isRefetching } = useQuery({
     queryKey: ["hero-billboard-trending", currentContent],
     queryFn: async () => {
-      try {
-        if (isTv) {
-          const res = await tmdb.trending.trending("tv", "day");
-          if (res?.results?.length > 0) return res;
-        } else {
-          const res = await tmdb.trending.trending("movie", "day");
-          if (res?.results?.length > 0) return res;
-        }
-      } catch (err) {
-        console.warn("TMDB fetch error in billboard, using top trending fallback:", err);
-      }
-      return {
-        page: 1,
-        results: isTv ? MOCK_TV_SHOWS : MOCK_MOVIES,
-        total_pages: 1,
-        total_results: 10,
-      };
+      const response: CatalogListResponse<Movie | TV> = isTv
+        ? await getTrendingTvShows({ timeWindow: "day" })
+        : await getTrendingMovies({ timeWindow: "day" });
+
+      return unwrapCatalog(response);
     },
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
-  // Extract top 4 trending titles
+  // Extract the top trending titles that actually ship a backdrop.
   const heroItems = useMemo(() => {
-    const rawList = data?.results && data.results.length > 0 ? data.results : (isTv ? MOCK_TV_SHOWS : MOCK_MOVIES);
-    const withBackdrop = rawList.filter((item: any) => Boolean(item.backdrop_path));
-    if (withBackdrop.length >= 4) {
-      return withBackdrop.slice(0, 4);
-    }
-    const fallbackList = isTv ? MOCK_TV_SHOWS : MOCK_MOVIES;
-    const combined = [...withBackdrop];
-    for (const item of fallbackList) {
-      if (combined.length >= 4) break;
-      if (!combined.some((c: any) => c.id === item.id)) {
-        combined.push(item);
-      }
-    }
-    return combined.slice(0, 4);
-  }, [data, isTv]);
+    const rawList = data?.results ?? [];
+    return rawList.filter((item: any) => Boolean(item.backdrop_path)).slice(0, 4);
+  }, [data]);
 
   // Sync selected index with Embla scroll events
   const onSelect = useCallback(() => {
@@ -131,24 +111,31 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
     [emblaApi]
   );
 
-  if (isPending && (!heroItems || heroItems.length === 0)) {
+  if (isPending && heroItems.length === 0) {
     return (
       <div className={heroFrame}>
         <Skeleton className="size-full rounded-none opacity-20" />
-        <div className="absolute inset-x-4 bottom-14 z-20 flex max-w-xl flex-col gap-3 md:left-12">
-          <Skeleton className="h-4 w-24 rounded-full opacity-40" />
-          <Skeleton className="h-10 w-64 rounded-md opacity-40" />
-          <Skeleton className="h-4 w-40 rounded-full opacity-30" />
-          <div className="flex gap-2">
-            <Skeleton className="h-11 w-28 rounded-full opacity-40" />
-            <Skeleton className="h-11 w-28 rounded-full opacity-30" />
-          </div>
+        <div className="absolute inset-0 z-20 grid place-items-center px-4">
+          <PopcornTvLoader size="lg" label="Loading today's trending" />
         </div>
       </div>
     );
   }
 
-  if (!heroItems || heroItems.length === 0) return null;
+  if (isError) {
+    return (
+      <div className={cn(heroFrame, "grid place-items-center px-4")}>
+        <CatalogErrorState
+          error={error}
+          isRetrying={isRefetching}
+          onRetry={() => refetch()}
+          title="Billboard unavailable"
+        />
+      </div>
+    );
+  }
+
+  if (heroItems.length === 0) return null;
 
   return (
     <div

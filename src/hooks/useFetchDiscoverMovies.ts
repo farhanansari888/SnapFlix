@@ -1,8 +1,7 @@
-"use client";
-
-import { tmdb } from "@/api/tmdb";
+import { getDiscoverList } from "@/actions/lists";
+import { CatalogListResponse } from "@/types";
 import { DiscoverMoviesFetchQueryType } from "@/types/movie";
-import { MovieDiscoverResult } from "tmdb-ts/dist/types/discover";
+import { Movie } from "tmdb-ts/dist/types";
 
 interface FetchDiscoverMovies {
   page?: number;
@@ -10,30 +9,17 @@ interface FetchDiscoverMovies {
   genres?: string;
 }
 
-const useFetchDiscoverMovies = ({
+/**
+ * Resolves a movie collection from TMDB through a server action, so the token
+ * stays on the server and the response is shared/cached across visitors.
+ */
+const fetchDiscoverMovies = ({
   page = 1,
   type = "discover",
   genres,
-}: FetchDiscoverMovies): Promise<MovieDiscoverResult> => {
-  const discover = () => tmdb.discover.movie({ page: page, with_genres: genres });
-  const todayTrending = () => tmdb.trending.trending("movie", "day", { page: page });
-  const thisWeekTrending = () => tmdb.trending.trending("movie", "week", { page: page });
-  const popular = () => tmdb.movies.popular({ page: page });
-  const nowPlaying = () => tmdb.movies.nowPlaying({ page: page });
-  const upcoming = () => tmdb.movies.upcoming({ page: page });
-  const topRated = () => tmdb.movies.topRated({ page: page });
+}: FetchDiscoverMovies): Promise<CatalogListResponse<Movie>> =>
+  getDiscoverList({ mediaType: "movie", type, page, genres }) as Promise<
+    CatalogListResponse<Movie>
+  >;
 
-  const queryData = {
-    discover,
-    todayTrending,
-    thisWeekTrending,
-    popular,
-    nowPlaying,
-    upcoming,
-    topRated,
-  }[type];
-
-  return queryData();
-};
-
-export default useFetchDiscoverMovies;
+export default fetchDiscoverMovies;

@@ -2,60 +2,54 @@
 
 import TvShowHomeCard from "@/components/sections/TV/Cards/Poster";
 import Carousel from "@/components/ui/wrapper/Carousel";
-import { QueryList } from "@/types";
-import { MOCK_TV_SHOWS } from "@/utils/mockData";
-import { Skeleton } from "@heroui/react";
-import { useInViewport } from "@mantine/hooks";
-import { useQuery } from "@tanstack/react-query";
+import CatalogErrorState from "@/components/ui/other/CatalogErrorState";
+import PopcornTvLoader from "@/components/ui/other/PopcornTvLoader";
 import RowHeader from "@/components/ui/other/RowHeader";
+import { QueryList } from "@/types";
+import { unwrapCatalog } from "@/utils/catalog";
+import { useQuery } from "@tanstack/react-query";
+import { useInViewport } from "@mantine/hooks";
 import { kebabCase } from "string-ts";
 import { TV } from "tmdb-ts/dist/types";
 
 const TvShowHomeList: React.FC<QueryList<TV>> = ({ query, name, param }) => {
   const key = kebabCase(name) + "-list";
   const { ref, inViewport } = useInViewport();
-  const { data, isPending } = useQuery({
-    queryFn: async () => {
-      try {
-        const res = await query();
-        if (res?.results?.length > 0) return res;
-      } catch (err) {
-        console.warn(`Query failed for ${name}, using fallback:`, err);
-      }
-      return {
-        page: 1,
-        results: MOCK_TV_SHOWS,
-        total_pages: 1,
-        total_results: MOCK_TV_SHOWS.length,
-      };
-    },
+  const { data, isPending, isError, error, refetch, isRefetching } = useQuery({
+    queryFn: async () => unwrapCatalog(await query()),
     queryKey: [key],
     enabled: inViewport,
   });
 
-  const results = data?.results && data.results.length > 0 ? data.results : MOCK_TV_SHOWS;
+  const results = data?.results ?? [];
 
   return (
     <section id={key} className="min-h-[260px] md:min-h-[310px]" ref={ref}>
-      {isPending && results.length === 0 ? (
-        <div className="flex w-full flex-col gap-4 px-4 md:px-12">
-          <div className="flex grow items-center justify-between">
-            <Skeleton className="h-6 w-44 rounded-sm opacity-20" />
-            <Skeleton className="h-4 w-16 rounded-sm opacity-20" />
+      <div className="z-3 flex flex-col gap-2">
+        <RowHeader
+          title={name}
+          href={`/discover?type=${param}&content=tv`}
+          className="px-4 md:px-12"
+        />
+
+        {isPending && (
+          <div className="flex min-h-[220px] items-center justify-center">
+            <PopcornTvLoader size="md" label={`Fetching ${name.toLowerCase()}`} />
           </div>
-          <div className="flex gap-3 overflow-hidden">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-[240px] w-[160px] shrink-0 rounded-md opacity-25" />
-            ))}
+        )}
+
+        {!isPending && isError && (
+          <div className="px-4 md:px-12">
+            <CatalogErrorState
+              compact
+              error={error}
+              isRetrying={isRefetching}
+              onRetry={() => refetch()}
+            />
           </div>
-        </div>
-      ) : (
-        <div className="z-3 flex flex-col gap-2">
-          <RowHeader
-            title={name}
-            href={`/discover?type=${param}&content=tv`}
-            className="px-4 md:px-12"
-          />
+        )}
+
+        {!isPending && !isError && results.length > 0 && (
           <div className="px-4 md:px-12">
             <Carousel>
               {results.map((tv) => (
@@ -68,8 +62,8 @@ const TvShowHomeList: React.FC<QueryList<TV>> = ({ query, name, param }) => {
               ))}
             </Carousel>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 };
