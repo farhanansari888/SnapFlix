@@ -57,6 +57,82 @@ const SIZES = {
   lg: { box: 92, stroke: 4.6, text: "text-sm" },
 } as const;
 
+/**
+ * All loaders on a page share a single requestAnimationFrame loop (a busy home
+ * page can mount eight of them) and a single measurement of both icons, so the
+ * shapes stay perfectly in sync while the cost stays flat.
+ */
+type FrameHandler = (progress: number) => void;
+
+const handlers = new Set<FrameHandler>();
+let rafId = 0;
+let startedAt = 0;
+let cachedRings: { from: Point[][]; to: Point[][] } | null = null;
+
+/** Progress (0 = popcorn, 1 = TV) for a point in time of the loop. */
+const morphProgress = (elapsed: number): number => {
+  const elapsedInCycle = elapsed % CYCLE_MS;
+
+  if (elapsedInCycle < HOLD_MS) return 0;
+  if (elapsedInCycle < HOLD_MS + MORPH_MS) {
+    return easeInOutCubic((elapsedInCycle - HOLD_MS) / MORPH_MS);
+  }
+  if (elapsedInCycle < HOLD_MS * 2 + MORPH_MS) return 1;
+
+  return 1 - easeInOutCubic((elapsedInCycle - HOLD_MS * 2 - MORPH_MS) / MORPH_MS);
+};
+
+const tick = (now: number) => {
+  const progress = morphProgress(now - startedAt);
+  handlers.forEach((handler) => handler(progress));
+  rafId = requestAnimationFrame(tick);
+};
+
+const subscribe = (handler: FrameHandler) => {
+  handlers.add(handler);
+  if (!rafId) {
+    startedAt = performance.now();
+    rafId = requestAnimationFrame(tick);
+  }
+};
+
+const unsubscribe = (handler: FrameHandler) => {
+  handlers.delete(handler);
+  if (!handlers.size && rafId) {
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+};
+
+/** Measures both icons once with a throwaway, off screen SVG path element. */
+const getRings = (): typeof cachedRings => {
+  if (cachedRings || typeof document === "undefined") return cachedRings;
+
+  const measuringSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  measuringSvg.setAttribute("width", "0");
+  measuringSvg.setAttribute("height", "0");
+  measuringSvg.setAttribute("aria-hidden", "true");
+  measuringSvg.style.position = "absolute";
+  measuringSvg.style.opacity = "0";
+  measuringSvg.style.pointerEvents = "none";
+  document.body.appendChild(measuringSvg);
+
+  const measuringPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  measuringSvg.appendChild(measuringPath);
+
+  try {
+    const from = POPCORN_PATHS.map((d) => samplePath(measuringPath, d));
+    const to = TV_PATHS.map((d, index) => alignRing(from[index], samplePath(measuringPath, d)));
+    cachedRings = { from, to };
+  } catch (error) {
+    console.warn("PopcornTvLoader: path morph unavailable, keeping the static icon.", error);
+  } finally {
+    measuringSvg.remove();
+  }
+
+  return cachedRings;
+};
+
 const PopcornTvLoader: React.FC<PopcornTvLoaderProps> = ({
   size = "md",
   label,
@@ -72,73 +148,30 @@ const PopcornTvLoader: React.FC<PopcornTvLoaderProps> = ({
   const dimensions = SIZES[size] ?? SIZES.md;
 
   useEffect(() => {
-    if (reducedMotion || typeof document === "undefined") return;
+    if (reducedMotion) return;
 
-    // Off screen SVG used purely for path measuring.
-    const measuringSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    measuringSvg.setAttribute("width", "0");
-    measuringSvg.setAttribute("height", "0");
-    measuringSvg.setAttribute("aria-hidden", "true");
-    measuringSvg.style.position = "absolute";
-    measuringSvg.style.opacity = "0";
-    measuringSvg.style.pointerEvents = "none";
-    document.body.appendChild(measuringSvg);
+    const rings = getRings();
+    if (!rings) return;
 
-    const measuringPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    measuringSvg.appendChild(measuringPath);
+    let handler: FrameHandler | null = null;
 
-    let from: Point[][] = [];
-    let to: Point[][] = [];
-
-    try {
-      from = POPCORN_PATHS.map((d) => samplePath(measuringPath, d));
-      to = TV_PATHS.map((d, index) => alignRing(from[index], samplePath(measuringPath, d)));
-    } catch (error) {
-      console.warn("PopcornTvLoader: path morph unavailable, falling back to static icon.", error);
-      measuringSvg.remove();
-      return;
-    }
-
-    measuringSvg.remove();
-
-    let frame = 0;
-    let cancelled = false;
-    const start = performance.now();
-
-    const tick = (now: number) => {
-      if (cancelled) return;
-
-      const elapsed = (now - start) % CYCLE_MS;
-      let t = 0;
-
-      if (elapsed < HOLD_MS) {
-        t = 0;
-      } else if (elapsed < HOLD_MS + MORPH_MS) {
-        t = easeInOutCubic((elapsed - HOLD_MS) / MORPH_MS);
-      } else if (elapsed < HOLD_MS * 2 + MORPH_MS) {
-        t = 1;
-      } else {
-        t = 1 - easeInOutCubic((elapsed - HOLD_MS * 2 - MORPH_MS) / MORPH_MS);
+    handler = (progress: number) => {
+      for (let index = 0; index < rings.from.length; index++) {
+        const element = pathRefs.current[index];
+        if (element) {
+          element.setAttribute("d", morphPath(rings.from[index], rings.to[index], progress));
+        }
       }
 
       // Only re-renders when the phase actually flips.
-      const nextPhase: "popcorn" | "tv" = t > 0.5 ? "tv" : "popcorn";
+      const nextPhase: "popcorn" | "tv" = progress > 0.5 ? "tv" : "popcorn";
       setPhase((previous) => (previous === nextPhase ? previous : nextPhase));
-
-      for (let index = 0; index < from.length; index++) {
-        const element = pathRefs.current[index];
-        if (!element) continue;
-        element.setAttribute("d", morphPath(from[index], to[index], t));
-      }
-
-      frame = requestAnimationFrame(tick);
     };
 
-    frame = requestAnimationFrame(tick);
+    subscribe(handler);
 
     return () => {
-      cancelled = true;
-      cancelAnimationFrame(frame);
+      if (handler) unsubscribe(handler);
     };
   }, [reducedMotion]);
 
