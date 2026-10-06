@@ -2,6 +2,46 @@ import { Movie, TV } from "tmdb-ts/dist/types";
 
 export type ContentType = "movie" | "tv";
 
+/** Failure modes reported by the TMDB server layer. */
+export type CatalogError = "unconfigured" | "unauthorized" | "not-found" | "unavailable";
+
+/** Standard paginated TMDB envelope (`/trending`, `/movie/popular`, `/search/*`, ...). */
+export type CatalogList<T> = {
+  page: number;
+  results: T[];
+  total_pages: number;
+  total_results: number;
+};
+
+/**
+ * Result of a catalog server action. Actions resolve instead of throwing so the
+ * client always receives a serializable, user presentable error.
+ */
+export type CatalogListResponse<T> =
+  | { ok: true; data: CatalogList<T> }
+  | { ok: false; error: CatalogError; message: string };
+
+/** Movie collections exposed by the home rows and the discover page. */
+export type MovieListType = "popular" | "nowPlaying" | "upcoming" | "topRated";
+
+/** TV collections exposed by the home rows and the discover page. */
+export type TvListType = "popular" | "onTheAir" | "topRated";
+
+/** Time window accepted by the TMDB trending endpoint. */
+export type TrendingWindow = "day" | "week";
+
+/** A movie or TV entry returned by the merged (multi) TMDB search. */
+export type CatalogSuggestionItem = {
+  id: number;
+  title: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  release_date: string;
+  vote_average: number;
+  overview: string;
+  media_type: ContentType;
+};
+
 export type Params<T> = {
   params: Promise<T>;
 };
@@ -29,12 +69,8 @@ export type TvShowParam =
 
 export type QueryList<T extends Movie | TV> = {
   name: string;
-  query: () => Promise<{
-    page: number;
-    results: T[];
-    total_results: number;
-    total_pages: number;
-  }>;
+  /** Server action that resolves the row from TMDB. */
+  query: () => Promise<CatalogListResponse<T>>;
   param: T extends Movie ? MovieParam : TvShowParam;
 };
 

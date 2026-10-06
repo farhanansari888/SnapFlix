@@ -1,8 +1,8 @@
 "use client";
 
 import ContentTypeSelection from "@/components/ui/other/ContentTypeSelection";
+import PopcornTvLoader from "@/components/ui/other/PopcornTvLoader";
 import { siteConfig } from "@/config/site";
-import { Spinner } from "@heroui/react";
 import dynamic from "next/dynamic";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Suspense } from "react";
@@ -28,12 +28,9 @@ const HomePageList: React.FC = () => {
       <div className="relative flex min-h-32 flex-col gap-8 md:gap-12">
         <Suspense
           fallback={
-            <Spinner
-              size="lg"
-              variant="simple"
-              className="absolute-center"
-              color="primary"
-            />
+            <div className="flex min-h-64 items-center justify-center">
+              <PopcornTvLoader size="lg" label="Loading SnapFlix" />
+            </div>
           }
         >
           {content === "movie" && (

@@ -1,52 +1,53 @@
 "use client";
 
 import BackToTopButton from "@/components/ui/button/BackToTopButton";
-import { Spinner } from "@heroui/react";
+import CatalogErrorState from "@/components/ui/other/CatalogErrorState";
+import Loop from "@/components/ui/other/Loop";
+import PopcornTvLoader from "@/components/ui/other/PopcornTvLoader";
+import PosterCardSkeleton from "@/components/ui/other/PosterCardSkeleton";
+import useDiscoverFilters from "@/hooks/useDiscoverFilters";
+import fetchDiscoverMovies from "@/hooks/useFetchDiscoverMovies";
+import { DiscoverMoviesFetchQueryType } from "@/types/movie";
+import { unwrapCatalog } from "@/utils/catalog";
+import { getLoadingLabel } from "@/utils/movies";
 import { useInViewport } from "@mantine/hooks";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { notFound } from "next/navigation";
 import { memo, useEffect } from "react";
 import MoviePosterCard from "../Movie/Cards/Poster";
-import useDiscoverFilters from "@/hooks/useDiscoverFilters";
-import useFetchDiscoverMovies from "@/hooks/useFetchDiscoverMovies";
-import { DiscoverMoviesFetchQueryType } from "@/types/movie";
-import Loop from "@/components/ui/other/Loop";
-import PosterCardSkeleton from "@/components/ui/other/PosterCardSkeleton";
-import { getLoadingLabel } from "@/utils/movies";
-import { MOCK_MOVIES } from "@/utils/mockData";
 
 const MovieDiscoverList = () => {
   const { ref, inViewport } = useInViewport();
   const { genresString, queryType } = useDiscoverFilters();
 
-  const { data, isPending, status, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const { data, isPending, isError, error, fetchNextPage, isFetchingNextPage, hasNextPage, refetch, isRefetching } =
     useInfiniteQuery({
       queryKey: ["discover-movies", queryType, genresString],
       queryFn: ({ pageParam }) =>
-        useFetchDiscoverMovies({
+        fetchDiscoverMovies({
           page: pageParam,
           type: queryType as DiscoverMoviesFetchQueryType,
           genres: genresString,
-        }),
+        }).then(unwrapCatalog),
       initialPageParam: 1,
       getNextPageParam: (lastPage) =>
         lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined,
     });
 
   useEffect(() => {
-    if (inViewport && !isPending) {
+    if (inViewport && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inViewport]);
+  }, [inViewport, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (status === "error" || !data) {
+  if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center gap-10">
-        <div className="movie-grid">
-          {MOCK_MOVIES.map((movie) => (
-            <MoviePosterCard key={movie.id} movie={movie as any} variant="bordered" />
-          ))}
-        </div>
+      <div className="flex flex-col items-center justify-center gap-6 py-16">
+        <CatalogErrorState
+          error={error}
+          isRetrying={isRefetching}
+          onRetry={() => refetch()}
+          title="Movies are unavailable"
+        />
       </div>
     );
   }
@@ -73,7 +74,7 @@ const MovieDiscoverList = () => {
         })}
       </div>
       <div ref={ref} className="flex h-24 items-center justify-center">
-        {isFetchingNextPage && <Spinner size="lg" variant="wave" label={getLoadingLabel()} />}
+        {isFetchingNextPage && <PopcornTvLoader size="sm" label={getLoadingLabel()} />}
         {!hasNextPage && !isPending && (
           <p className="text-muted-foreground text-center text-base">
             You have reached the end of the list.

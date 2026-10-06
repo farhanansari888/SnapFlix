@@ -6,6 +6,7 @@ SnapFlix is a private, proprietary movies and TV shows streaming platform built 
 
 - **🎬 Netflix Aesthetic**: Immersive dark cinema experience with dynamic Hero Billboard, Top 10 rankings, and high-contrast visuals.
 - **🧭 Dynamic Discovery**: Real-time trending, popular, top-rated, and upcoming movies and series.
+- **🍿 Popcorn ⇄ TV Loader**: custom SVG shape-morphing loading animation (no canned placeholder data, ever).
 - **🔎 Instant Search**: Quick search capabilities across titles, actors, genres, and directors.
 - **📂 Personal Watchlist**: Save favorites and track watch history securely.
 - **💻📱 Fully Responsive**: Fluid desktop and mobile playback experience.
@@ -18,7 +19,7 @@ SnapFlix is a private, proprietary movies and TV shows streaming platform built 
 - **HeroUI**: Component primitives tailored for high-contrast dark cinema aesthetics.
 - **TypeScript**: Complete type safety.
 - **TanStack Query**: Efficient client data caching and synchronizations.
-- **The Movie Database (TMDB) API**: Dynamic movie and series metadata integration.
+- **The Movie Database (TMDB) API**: Dynamic movie and series metadata integration, fetched **server side** (server actions + cached `fetch`) so the token never reaches the browser.
 - **Supabase**: Secure user authentication and database management.
 
 ## Getting Started
@@ -32,6 +33,19 @@ SnapFlix is a private, proprietary movies and TV shows streaming platform built 
    ```bash
    cp .env.local.example .env.local
    ```
+
+   Every catalog surface (home carousel rows, hero billboard, Top 10, search,
+   "Popular on SnapFlix", discover) is loaded from TMDB **on the server**, so at
+   least one credential is required — a v4 read access token is recommended:
+
+   ```bash
+   TMDB_ACCESS_TOKEN="your_tmdb_access_token"          # preferred, server only
+   # or
+   NEXT_PUBLIC_TMDB_ACCESS_TOKEN="your_tmdb_access_token"
+   ```
+
+   If TMDB is unreachable or not configured, the affected sections show a
+   retryable error state instead of placeholder titles.
 
 3. Run the development server:
    ```bash

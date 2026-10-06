@@ -19,7 +19,10 @@ interface MoviePosterCardProps {
 
 const MoviePosterCard: React.FC<MoviePosterCardProps> = ({ movie, variant = "full" }) => {
   const [opened, handlers] = useDisclosure(false);
-  const releaseYear = new Date(movie.release_date).getFullYear();
+  // TMDB omits the release date on some entries, guard against "NaN" years.
+  const releaseYear = movie.release_date
+    ? new Date(movie.release_date).getFullYear()
+    : undefined;
   const posterImage = getImageUrl(movie.poster_path);
   const title = mutateMovieTitle(movie);
   const { mobile } = useBreakpoints();
@@ -113,7 +116,7 @@ const MoviePosterCard: React.FC<MoviePosterCardProps> = ({ movie, variant = "ful
                 <p className="text-md truncate font-bold">{title}</p>
               </CardBody>
               <CardFooter className="justify-between pt-0 text-xs">
-                <p>{releaseYear}</p>
+                <p>{releaseYear ?? "—"}</p>
                 <Rating rate={movie.vote_average} />
               </CardFooter>
             </Card>

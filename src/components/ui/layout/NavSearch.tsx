@@ -1,8 +1,8 @@
 "use client";
 
-import { tmdb } from "@/api/tmdb";
+import { searchTitles } from "@/actions/lists";
+import { CatalogSuggestionItem } from "@/types";
 import { cn } from "@/utils/helpers";
-import { MOCK_MOVIES, MOCK_TV_SHOWS } from "@/utils/mockData";
 import { getImageUrl } from "@/utils/movies";
 import { useClickOutside, useDebouncedValue } from "@mantine/hooks";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,16 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FaPlay } from "react-icons/fa6";
 import { IoClose, IoInformationCircleOutline, IoSearchOutline } from "react-icons/io5";
 
-export interface SearchResultItem {
-  id: number;
-  title: string;
-  poster_path?: string | null;
-  backdrop_path?: string | null;
-  release_date?: string;
-  vote_average?: number;
-  media_type: "movie" | "tv";
-  overview?: string;
-}
+export type SearchResultItem = CatalogSuggestionItem;
 
 const NavSearch = () => {
   const router = useRouter();
@@ -31,12 +22,14 @@ const NavSearch = () => {
   const [activeFilter, setActiveFilter] = useState<"all" | "movie" | "tv">("all");
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setQuery("");
     setResults([]);
+    setSearchError(null);
   }, []);
 
   // Click outside listener closes the search bar and floating list
@@ -81,92 +74,28 @@ const NavSearch = () => {
     setIsLoading(true);
 
     const searchCatalog = async () => {
-      let combinedResults: SearchResultItem[] = [];
-
       try {
-        const [moviesRes, tvRes] = await Promise.allSettled([
-          tmdb.search.movies({ query: trimmed, page: 1 }),
-          tmdb.search.tvShows({ query: trimmed, page: 1 }),
-        ]);
+        // Real TMDB search, executed by a server action (no client side token).
+        const response = await searchTitles({ query: trimmed, limit: 10 });
 
-        const moviesList: SearchResultItem[] =
-          moviesRes.status === "fulfilled" && moviesRes.value?.results
-            ? moviesRes.value.results.map((m) => ({
-                id: m.id,
-                title: m.title,
-                poster_path: m.poster_path,
-                backdrop_path: m.backdrop_path,
-                release_date: m.release_date,
-                vote_average: m.vote_average,
-                media_type: "movie" as const,
-                overview: m.overview,
-              }))
-            : [];
+        if (!isMounted) return;
 
-        const tvList: SearchResultItem[] =
-          tvRes.status === "fulfilled" && tvRes.value?.results
-            ? tvRes.value.results.map((t) => ({
-                id: t.id,
-                title: t.name,
-                poster_path: t.poster_path,
-                backdrop_path: t.backdrop_path,
-                release_date: t.first_air_date,
-                vote_average: t.vote_average,
-                media_type: "tv" as const,
-                overview: t.overview,
-              }))
-            : [];
-
-        const maxLen = Math.max(moviesList.length, tvList.length);
-        for (let i = 0; i < maxLen; i++) {
-          if (moviesList[i]) combinedResults.push(moviesList[i]);
-          if (tvList[i]) combinedResults.push(tvList[i]);
+        if (!response.ok) {
+          console.warn("TMDB search failed:", response.message);
+          setResults([]);
+          setSearchError(response.message);
+          return;
         }
+
+        setSearchError(null);
+        setResults(response.data);
       } catch (err) {
-        console.warn("TMDB search error in NavSearch, using catalog fallback:", err);
-      }
-
-      // Catalog fallback if empty
-      if (combinedResults.length === 0) {
-        const q = trimmed.toLowerCase();
-        const movieMatches: SearchResultItem[] = MOCK_MOVIES.filter(
-          (m) =>
-            m.title.toLowerCase().includes(q) ||
-            m.original_title.toLowerCase().includes(q) ||
-            (m.overview && m.overview.toLowerCase().includes(q)),
-        ).map((m) => ({
-          id: m.id,
-          title: m.title,
-          poster_path: m.poster_path,
-          backdrop_path: m.backdrop_path,
-          release_date: m.release_date,
-          vote_average: m.vote_average,
-          media_type: "movie",
-          overview: m.overview,
-        }));
-
-        const tvMatches: SearchResultItem[] = MOCK_TV_SHOWS.filter(
-          (t) =>
-            t.name.toLowerCase().includes(q) ||
-            t.original_name.toLowerCase().includes(q) ||
-            (t.overview && t.overview.toLowerCase().includes(q)),
-        ).map((t) => ({
-          id: t.id,
-          title: t.name,
-          poster_path: t.poster_path,
-          backdrop_path: t.backdrop_path,
-          release_date: t.first_air_date,
-          vote_average: t.vote_average,
-          media_type: "tv",
-          overview: t.overview,
-        }));
-
-        combinedResults = [...movieMatches, ...tvMatches];
-      }
-
-      if (isMounted) {
-        setResults(combinedResults);
-        setIsLoading(false);
+        console.warn("TMDB search error:", err);
+        if (!isMounted) return;
+        setResults([]);
+        setSearchError("Search is temporarily unavailable.");
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -348,12 +277,21 @@ const NavSearch = () => {
               {!isLoading && filteredResults.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-8 px-4 text-center gap-2">
                   <IoSearchOutline size={30} className="text-gray-500" />
-                  <p className="text-sm font-bold text-white">
-                    No results found for &ldquo;{query}&rdquo;
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Try checking for spelling or search for another movie or series.
-                  </p>
+                  {searchError ? (
+                    <>
+                      <p className="text-sm font-bold text-white">Search is unavailable</p>
+                      <p className="text-xs text-gray-400">{searchError}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-white">
+                        No results found for &ldquo;{query}&rdquo;
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Try checking for spelling or search for another movie or series.
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
