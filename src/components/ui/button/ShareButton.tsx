@@ -30,6 +30,7 @@ interface ShareButtonProps {
   title: string;
   id: string | number;
   type?: ContentType;
+  className?: string;
 }
 
 const HASTAGS = ["snapflix", "movies", "streaming", "entertainment"];
@@ -77,15 +78,23 @@ const SHARE_BUTTONS = [
   },
 ];
 
-const ShareButton: React.FC<ShareButtonProps> = ({ title, id, type = "movie" }) => {
-  const url = `https://${location.hostname}/${type}/${id}`;
+const ShareButton: React.FC<ShareButtonProps> = ({ title, id, type = "movie", className }) => {
+  // `location` isn't defined during SSR - guard it so this never crashes the server render.
+  const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+  const url = `https://${hostname}/${type}/${id}`;
   const description = `Watch and stream ${title} on SnapFlix!`;
 
   const [opened, { open, close }] = useDisclosure(false);
 
   return (
     <>
-      <IconButton icon={<Share size={20} />} variant="ghost" tooltip="Share" onPress={open} />
+      <IconButton
+        icon={<Share size={20} />}
+        variant="ghost"
+        tooltip="Share"
+        onPress={open}
+        className={className}
+      />
       <VaulDrawer open={opened} onClose={close} backdrop="blur" title="Share via">
         <div className="space-y-8 px-6">
           <div className="grid grid-cols-4 gap-x-5 gap-y-3 md:gap-x-10 md:gap-y-5">

@@ -1,6 +1,7 @@
 "use client";
 
 import BookmarkButton from "@/components/ui/button/BookmarkButton";
+import MarkCompletedButton from "@/components/ui/button/MarkCompletedButton";
 import ShareButton from "@/components/ui/button/ShareButton";
 import Trailer from "@/components/ui/overlay/Trailer";
 import { SavedMovieDetails } from "@/types/movie";
@@ -15,6 +16,11 @@ interface DetailHeroBillboardProps {
   onViewEpisodesClick?: () => void;
 }
 
+const heroFrame =
+  "relative h-[62dvh] min-h-[420px] max-h-[540px] w-full overflow-hidden bg-[#0c0c0e] sm:h-[70dvh] sm:min-h-[500px] sm:max-h-[680px] lg:h-[78dvh] lg:min-h-[560px] lg:max-h-[820px]";
+
+const iconChip = "sf-chip size-11 min-w-11 shrink-0 rounded-full bg-transparent text-white shadow-none";
+
 const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
   media,
   type,
@@ -23,12 +29,20 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
   const isTv = type === "tv";
   const title = isTv ? mutateTvShowTitle(media) : mutateMovieTitle(media);
   const releaseDate = media.release_date || media.first_air_date;
-  const releaseYear = releaseDate ? new Date(releaseDate).getFullYear() : 2025;
+  const parsedDate = releaseDate ? new Date(releaseDate) : null;
+  const releaseYear = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.getFullYear() : null;
   const playHref = isTv ? `/watch/tv/${media.id}/1/1` : `/watch/movie/${media.id}`;
   const bgUrl = getImageUrl(media.backdrop_path || media.images?.backdrops?.[0]?.file_path, "backdrop", true);
-
-  const voteAverage = media.vote_average || 8.2;
-  const matchPercentage = Math.min(99, Math.round(voteAverage * 10 + 8));
+  const matchPercentage =
+    typeof media.vote_average === "number" && media.vote_average > 0
+      ? Math.min(99, Math.round(media.vote_average * 10))
+      : null;
+  const runtimeText = !isTv && media.runtime ? movieDurationString(media.runtime) : null;
+  const seasonsText =
+    isTv && media.number_of_seasons
+      ? `${media.number_of_seasons} season${media.number_of_seasons > 1 ? "s" : ""}`
+      : null;
+  const videos = media.videos?.results || [];
 
   const bookmarkData: SavedMovieDetails = {
     type: isTv ? "tv" : "movie",
@@ -42,143 +56,74 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
     saved_date: new Date().toISOString(),
   };
 
-  const runtimeText = !isTv && media.runtime ? movieDurationString(media.runtime) : null;
-  const seasonsText = isTv && media.number_of_seasons ? `${media.number_of_seasons} Season${media.number_of_seasons > 1 ? "s" : ""}` : null;
-  const videos = media.videos?.results || [];
-
   return (
-    <div className="group relative h-[60dvh] min-h-[400px] max-h-[520px] sm:h-[68dvh] sm:min-h-[480px] sm:max-h-[620px] lg:h-[80dvh] lg:min-h-[540px] lg:max-h-[800px] 2xl:h-[78dvh] w-full select-none overflow-hidden bg-[#141414]">
-      {/* Background Backdrop: Edge-to-Edge Cinematic Brilliance */}
+    <div className={heroFrame}>
       <img
         src={bgUrl}
-        alt={title}
-        className="absolute inset-0 size-full object-cover object-center sm:object-top filter brightness-100 contrast-[1.03] saturate-[1.05] pointer-events-none"
+        alt=""
+        width={1280}
+        height={720}
+        fetchPriority="high"
+        className="hero-ken pointer-events-none absolute inset-0 size-full object-cover object-[center_22%] sm:object-top"
         draggable={false}
       />
 
-      {/* Cinematic Vignette Gradients */}
-      {/* Bottom smooth fade to content section */}
-      <div className="absolute inset-x-0 bottom-0 h-36 sm:h-48 md:h-56 bg-linear-to-t from-[#141414] via-[#141414]/50 to-transparent pointer-events-none z-10" />
-      {/* Left subtle vignette only behind text */}
-      <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-3/5 bg-linear-to-r from-[#141414]/85 via-[#141414]/35 via-50% to-transparent pointer-events-none z-10" />
-      {/* Top subtle navbar blend */}
-      <div className="absolute top-0 inset-x-0 h-14 bg-linear-to-b from-black/20 to-transparent pointer-events-none z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[68%] bg-linear-to-t from-[#0c0c0e] via-[#0c0c0e]/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-1/2 bg-linear-to-r from-[#0c0c0e]/70 to-transparent md:block" />
 
-      {/* Hero Content Block */}
-      <div className="absolute bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 left-4 md:left-12 right-4 md:right-auto max-w-xl lg:max-w-2xl flex flex-col gap-2 sm:gap-2.5 md:gap-3 z-20">
-        {/* Netflix Brand Tagline / Badge */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="flex items-center justify-center h-4 w-3.5 sm:h-5 sm:w-4 rounded-xs bg-linear-to-b from-[#E50914] to-[#B81D24] shadow-xs">
-            <span className="text-[9px] sm:text-[11px] font-black text-white">S</span>
-          </div>
-          <span className="text-[10px] sm:text-xs md:text-sm font-extrabold tracking-[0.18em] sm:tracking-[0.22em] text-white uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-            {isTv ? "SNAPFLIX ORIGINAL SERIES" : "SNAPFLIX FEATURE FILM"}
-          </span>
-        </div>
+      <div className="absolute inset-x-4 bottom-8 z-20 flex max-w-xl flex-col gap-2 sm:inset-x-8 sm:bottom-10 md:left-12 md:gap-3">
+        <p className="text-xs font-semibold text-white/80 sm:text-sm">
+          {matchPercentage ? (
+            <span className="text-[#46d369]">{matchPercentage}% match</span>
+          ) : (
+            <span>{isTv ? "Series" : "Film"}</span>
+          )}
+          {matchPercentage && (
+            <>
+              <span className="mx-2 text-white/35">·</span>
+              {isTv ? "Series" : "Film"}
+            </>
+          )}
+        </p>
 
-        {/* Title */}
-        <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] line-clamp-2 leading-tight">
+        <h1 className="line-clamp-2 text-[1.7rem] leading-[1.05] font-black tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-6xl">
           {title}
         </h1>
 
-        {/* Tagline if available */}
-        {media.tagline && (
-          <p className="text-xs sm:text-sm font-semibold italic text-gray-300 drop-shadow-sm line-clamp-1">
-            &ldquo;{media.tagline}&rdquo;
-          </p>
-        )}
-
-        {/* Metadata Badges */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 text-[11px] sm:text-xs md:text-sm">
-          <span className="font-extrabold text-[#46D369] drop-shadow-sm">
-            {matchPercentage}% Match
-          </span>
-          <span className="text-gray-300 font-medium">{releaseYear}</span>
-          <span className="border border-white/40 px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded-xs text-[10px] sm:text-[11px] font-bold text-white uppercase">
-            {media.adult ? "18+" : "16+"}
-          </span>
-          {runtimeText && (
-            <span className="border border-white/30 px-1.5 py-0.5 rounded-xs text-[11px] font-bold text-gray-200">
-              {runtimeText}
+        <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/75 sm:text-sm">
+          {releaseYear && <span>{releaseYear}</span>}
+          {media.adult && (
+            <span className="rounded-full border border-white/25 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+              18+
             </span>
           )}
-          {seasonsText && (
-            <span className="border border-white/30 px-1.5 py-0.5 rounded-xs text-[11px] font-bold text-gray-200">
-              {seasonsText}
-            </span>
-          )}
-          <span className="hidden sm:inline-block border border-white/30 px-1.5 py-0.5 rounded-xs text-[11px] font-bold text-gray-200">
-            4K Ultra HD
-          </span>
-          <span className="hidden md:inline-block border border-white/30 px-1.5 py-0.5 rounded-xs text-[11px] font-bold text-gray-200">
-            5.1 Audio
-          </span>
+          {runtimeText && <span>{runtimeText}</span>}
+          {seasonsText && <span>{seasonsText}</span>}
         </div>
 
-        {/* Genres Pills */}
-        {media.genres && media.genres.length > 0 && (
-          <div className="hidden sm:flex flex-wrap gap-1.5 pt-0.5">
-            {media.genres.slice(0, 4).map((g: any) => (
-              <span
-                key={g.id}
-                className="text-[11px] text-gray-200 font-medium bg-black/50 px-2.5 py-0.5 rounded-full border border-white/10"
-              >
-                {g.name}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Overview / Synopsis */}
-        <p className="text-xs sm:text-sm md:text-base text-gray-200/90 leading-relaxed line-clamp-2 sm:line-clamp-3 max-w-lg drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-          {media.overview || "Stream this title now exclusively on SnapFlix."}
-        </p>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1 sm:pt-2">
-          {/* Main Play Button */}
+        <div className="flex items-center gap-2 overflow-x-auto pt-1 no-scrollbar">
           <Link
             href={playHref}
-            className="group/btn flex items-center gap-1.5 sm:gap-2.5 rounded-md bg-white px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-bold text-black shadow-lg transition-all duration-200 hover:bg-white/80 active:scale-95"
+            className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-black transition active:scale-95"
           >
-            <FaPlay className="text-xs sm:text-sm md:text-base transition-transform group-hover/btn:scale-110" />
-            <span>Play</span>
+            <FaPlay className="size-3.5" />
+            Play
           </Link>
-
-          {/* Episodes Jump Button (For TV Series) */}
           {isTv && onViewEpisodesClick && (
             <button
               type="button"
               onClick={onViewEpisodesClick}
-              className="flex items-center gap-1.5 sm:gap-2 rounded-md bg-white/20 backdrop-blur-md px-3.5 sm:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-semibold text-white transition-all duration-200 hover:bg-white/30 active:scale-95 border border-white/15 cursor-pointer"
+              className="sf-chip inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-semibold text-white transition hover:bg-white/15 active:scale-95"
             >
-              <IoListOutline size={18} className="sm:size-[20px]" />
-              <span>Episodes</span>
+              <IoListOutline className="size-5" />
+              Episodes
             </button>
           )}
-
-          {/* Trailer Modal Button */}
-          {videos.length > 0 && (
-            <div className="scale-95 sm:scale-100">
-              <Trailer videos={videos} />
-            </div>
-          )}
-
-          {/* Bookmark / My List */}
-          <div className="scale-95 sm:scale-105">
-            <BookmarkButton data={bookmarkData} />
-          </div>
-
-          {/* Share Modal Button */}
-          <div className="scale-95 sm:scale-100">
-            <ShareButton id={media.id} title={title} type={type} />
-          </div>
+          {videos.length > 0 && <Trailer videos={videos} appearance="chip" />}
+          {!isTv && <MarkCompletedButton movieId={media.id} />}
+          <BookmarkButton data={bookmarkData} className={iconChip} />
+          <ShareButton id={media.id} title={title} type={type} className={iconChip} />
         </div>
-      </div>
-
-      {/* Bottom Right: Maturity Rating Pill */}
-      <div className="absolute right-4 md:right-12 bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 hidden sm:flex items-center bg-[#141414]/70 border-l-3 border-[#E50914] py-1.5 pl-3 pr-4 backdrop-blur-xs text-xs font-bold text-gray-200 uppercase tracking-wider z-30">
-        {media.adult ? "TV-MA / 18+" : "TV-14 / 16+"}
       </div>
     </div>
   );

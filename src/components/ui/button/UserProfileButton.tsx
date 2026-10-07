@@ -81,17 +81,17 @@ const UserProfileButton: React.FC = () => {
       variant="light"
       isIconOnly
       size="sm"
-      className="size-8 min-w-8 p-0 bg-transparent hover:bg-white/10 rounded-xs transition-all flex items-center justify-center focus:outline-none cursor-pointer"
+      className="size-9 min-w-9 p-0 bg-transparent hover:bg-white/10 rounded-full transition-all flex items-center justify-center focus:outline-none cursor-pointer"
       aria-label={user?.username ? `Profile for ${user.username}` : "Sign In"}
     >
       {guest ? (
-        <div className="size-7 rounded-xs bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 flex items-center justify-center text-white/90 hover:text-white transition-all shadow-xs">
+        <div className="size-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-[#E50914]/70 flex items-center justify-center text-white/90 hover:text-white transition-all shadow-xs">
           <User className="size-3.5" />
         </div>
       ) : (
         <NetflixAvatar
           size={28}
-          className="size-7 rounded-xs ring-1 ring-white/30 hover:ring-white/70 hover:scale-105 transition-all shadow-xs"
+          className="size-8 rounded-full ring-1 ring-white/30 hover:ring-[#E50914] hover:scale-105 transition-all shadow-xs"
         />
       )}
     </Button>

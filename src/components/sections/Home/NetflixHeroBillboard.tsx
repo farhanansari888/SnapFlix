@@ -1,31 +1,51 @@
 "use client";
 
-import { tmdb } from "@/api/tmdb";
+import { getRecommendationsFromHistory, getTrendingMovies, getTrendingTvShows } from "@/actions/lists";
 import BookmarkButton from "@/components/ui/button/BookmarkButton";
+import CatalogErrorState from "@/components/ui/other/CatalogErrorState";
+import PopcornTvLoader from "@/components/ui/other/PopcornTvLoader";
+import { useWatchHistory } from "@/hooks/useWatchHistory";
+import { CatalogListResponse, ContentType } from "@/types";
 import { SavedMovieDetails } from "@/types/movie";
-import { MOCK_MOVIES, MOCK_TV_SHOWS } from "@/utils/mockData";
+import { unwrapCatalog } from "@/utils/catalog";
 import { getImageUrl, mutateMovieTitle, mutateTvShowTitle } from "@/utils/movies";
 import { Skeleton } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaPlay } from "react-icons/fa6";
-import { IoInformationCircleOutline } from "react-icons/io5";
+import { FaChevronLeft, FaChevronRight, FaPlay } from "react-icons/fa6";
+import { IoInformationCircleOutline, IoPause } from "react-icons/io5";
 import { useSearchParams } from "next/navigation";
+import { Movie, TV } from "tmdb-ts/dist/types";
+import { cn } from "@/utils/helpers";
+
+/** Source the billboard ended up showing, used to tweak its copy. */
+type BillboardSource = "personalized" | "trending";
+
+interface BillboardData {
+  results: (Movie | TV)[];
+  source: BillboardSource;
+}
 
 interface NetflixHeroBillboardProps {
   contentType?: "movie" | "tv";
 }
 
-const SLIDE_INTERVAL_MS = 3000; // 3 seconds infinite auto scroll
+const SLIDE_INTERVAL_MS = 7000;
+const heroFrame =
+  "relative h-[62dvh] min-h-[420px] max-h-[540px] w-full overflow-hidden bg-[#0c0c0e] sm:h-[70dvh] sm:min-h-[500px] sm:max-h-[680px] lg:h-[78dvh] lg:min-h-[560px] lg:max-h-[820px]";
 
 const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType: propContentType }) => {
   const searchParams = useSearchParams();
-  const currentContent = propContentType || searchParams.get("content") || "movie";
+  const currentContent: ContentType = propContentType || (searchParams.get("content") as ContentType) || "movie";
   const isTv = currentContent === "tv";
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [hoverPaused, setHoverPaused] = useState(false);
+  const [manualPaused, setManualPaused] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const paused = hoverPaused || hidden || manualPaused;
 
   // Embla Carousel with true seamless Infinite Loop
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -34,47 +54,55 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
     skipSnaps: false,
   });
 
-  const { data, isPending } = useQuery({
-    queryKey: ["hero-billboard-trending", currentContent],
-    queryFn: async () => {
-      try {
-        if (isTv) {
-          const res = await tmdb.trending.trending("tv", "day");
-          if (res?.results?.length > 0) return res;
-        } else {
-          const res = await tmdb.trending.trending("movie", "day");
-          if (res?.results?.length > 0) return res;
+  // Watch history (guest localStorage + Supabase when signed in) seeds the
+  // personalized picks below. New viewers with no history fall back to trending.
+  const { data: watchHistory, isLoading: isHistoryLoading } = useWatchHistory();
+
+  const { data, isPending, isError, error, refetch, isRefetching } = useQuery({
+    queryKey: [
+      "hero-billboard",
+      currentContent,
+      (watchHistory ?? [])
+        .filter((item) => item.type === currentContent)
+        .map((item) => `${item.media_id}`)
+        .join(","),
+    ],
+    queryFn: async (): Promise<BillboardData> => {
+      const seeds = (watchHistory ?? []).filter((item) => item.type === currentContent);
+
+      if (seeds.length > 0) {
+        try {
+          const recommendationsResponse = await getRecommendationsFromHistory({
+            mediaType: currentContent,
+            seedIds: seeds.map((item) => Number(item.media_id)),
+            excludeIds: (watchHistory ?? []).map((item) => Number(item.media_id)),
+          });
+          const unwrapped = unwrapCatalog(recommendationsResponse);
+          if (unwrapped.results.length > 0) {
+            return { results: unwrapped.results, source: "personalized" };
+          }
+        } catch {
+          // Fall through to trending below.
         }
-      } catch (err) {
-        console.warn("TMDB fetch error in billboard, using top trending fallback:", err);
       }
-      return {
-        page: 1,
-        results: isTv ? MOCK_TV_SHOWS : MOCK_MOVIES,
-        total_pages: 1,
-        total_results: 10,
-      };
+
+      const trendingResponse: CatalogListResponse<Movie | TV> = isTv
+        ? await getTrendingTvShows({ timeWindow: "day" })
+        : await getTrendingMovies({ timeWindow: "day" });
+
+      return { results: unwrapCatalog(trendingResponse).results, source: "trending" };
     },
+    enabled: !isHistoryLoading,
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
-  // Extract top 4 trending titles
+  const isPersonalized = data?.source === "personalized";
+
+  // Extract the top titles that actually ship a backdrop.
   const heroItems = useMemo(() => {
-    const rawList = data?.results && data.results.length > 0 ? data.results : (isTv ? MOCK_TV_SHOWS : MOCK_MOVIES);
-    const withBackdrop = rawList.filter((item: any) => Boolean(item.backdrop_path));
-    if (withBackdrop.length >= 4) {
-      return withBackdrop.slice(0, 4);
-    }
-    const fallbackList = isTv ? MOCK_TV_SHOWS : MOCK_MOVIES;
-    const combined = [...withBackdrop];
-    for (const item of fallbackList) {
-      if (combined.length >= 4) break;
-      if (!combined.some((c: any) => c.id === item.id)) {
-        combined.push(item);
-      }
-    }
-    return combined.slice(0, 4);
-  }, [data, isTv]);
+    const rawList = data?.results ?? [];
+    return rawList.filter((item: any) => Boolean(item.backdrop_path)).slice(0, 4);
+  }, [data]);
 
   // Sync selected index with Embla scroll events
   const onSelect = useCallback(() => {
@@ -100,16 +128,22 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
     }
   }, [currentContent, emblaApi]);
 
-  // Automatic Infinite Scroll Every 3 Seconds
   useEffect(() => {
-    if (!emblaApi || heroItems.length <= 1) return;
+    const onVisibility = () => setHidden(document.hidden);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
+  // Automatic infinite scroll. Pauses while hovered or the tab is hidden.
+  useEffect(() => {
+    if (!emblaApi || heroItems.length <= 1 || paused) return;
 
     const interval = setInterval(() => {
       emblaApi.scrollNext();
     }, SLIDE_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [emblaApi, heroItems.length, currentIndex]);
+  }, [emblaApi, heroItems.length, currentIndex, paused]);
 
   const handleSlideClick = useCallback(
     (index: number) => {
@@ -118,28 +152,48 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
     [emblaApi]
   );
 
-  if (isPending && (!heroItems || heroItems.length === 0)) {
+  if (isPending && heroItems.length === 0) {
     return (
-      <div className="relative h-[62dvh] min-h-[400px] max-h-[520px] sm:h-[70dvh] sm:min-h-[480px] sm:max-h-[640px] lg:h-[82dvh] lg:min-h-[560px] lg:max-h-[820px] 2xl:h-[80dvh] w-full overflow-hidden bg-[#141414]">
+      <div className={heroFrame}>
         <Skeleton className="size-full rounded-none opacity-20" />
-        <div className="absolute bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 left-4 md:left-12 flex flex-col gap-3 max-w-xl z-20">
-          <Skeleton className="h-5 w-28 sm:h-6 sm:w-36 rounded-sm opacity-40" />
-          <Skeleton className="h-9 w-60 sm:h-14 sm:w-80 rounded-sm opacity-40" />
-          <Skeleton className="h-3.5 w-44 sm:h-4 sm:w-60 rounded-sm opacity-30" />
-          <Skeleton className="h-10 w-full sm:h-16 rounded-sm opacity-30" />
-          <div className="flex gap-2.5">
-            <Skeleton className="h-9 w-24 sm:h-11 sm:w-32 rounded-md opacity-40" />
-            <Skeleton className="h-9 w-28 sm:h-11 sm:w-36 rounded-md opacity-40" />
-          </div>
+        <div className="absolute inset-0 z-20 grid place-items-center px-4">
+          <PopcornTvLoader size="lg" label="Finding something for you" />
         </div>
       </div>
     );
   }
 
-  if (!heroItems || heroItems.length === 0) return null;
+  if (isError) {
+    return (
+      <div className={cn(heroFrame, "grid place-items-center px-4")}>
+        <CatalogErrorState
+          error={error}
+          isRetrying={isRefetching}
+          onRetry={() => refetch()}
+          title="Billboard unavailable"
+        />
+      </div>
+    );
+  }
+
+  if (heroItems.length === 0) return null;
 
   return (
-    <div className="group relative h-[62dvh] min-h-[400px] max-h-[520px] sm:h-[70dvh] sm:min-h-[480px] sm:max-h-[640px] lg:h-[82dvh] lg:min-h-[560px] lg:max-h-[820px] 2xl:h-[80dvh] w-full select-none overflow-hidden bg-[#141414]">
+    <div
+      className={cn(
+        "group/hero select-none",
+        heroFrame,
+        paused && "hero-paused",
+      )}
+      onMouseEnter={() => setHoverPaused(true)}
+      onMouseLeave={() => setHoverPaused(false)}
+      onFocusCapture={() => setHoverPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setHoverPaused(false);
+        }
+      }}
+    >
       {/* Infinite Scroll Viewport */}
       <div className="size-full overflow-hidden" ref={emblaRef}>
         {/* Infinite Scroll Track */}
@@ -172,89 +226,65 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
 
             return (
               <div key={item.id || idx} className="relative h-full w-full flex-none overflow-hidden">
-                {/* Background Backdrop: Vibrant, Crisp, 100% Brightness */}
                 <img
                   src={bgUrl}
-                  alt={title}
-                  className="absolute inset-0 size-full object-cover object-center sm:object-top filter brightness-100 contrast-[1.03] saturate-[1.05] pointer-events-none"
+                  alt=""
+                  width={1280}
+                  height={720}
+                  fetchPriority={idx === currentIndex ? "high" : "low"}
+                  loading={idx === currentIndex ? "eager" : "lazy"}
+                  className={cn(
+                    "pointer-events-none absolute inset-0 size-full object-cover object-[center_22%] sm:object-top",
+                    idx === currentIndex && "hero-ken",
+                  )}
                   draggable={false}
                 />
 
-                {/* Cinematic Vignette Gradients */}
-                {/* Bottom smooth fade to content section */}
-                <div className="absolute inset-x-0 bottom-0 h-36 sm:h-48 md:h-56 bg-linear-to-t from-[#141414] via-[#141414]/50 to-transparent pointer-events-none z-10" />
-                {/* Left subtle vignette only behind text */}
-                <div className="absolute inset-y-0 left-0 w-full sm:w-3/4 md:w-3/5 bg-linear-to-r from-[#141414]/85 via-[#141414]/35 via-50% to-transparent pointer-events-none z-10" />
-                {/* Top subtle navbar blend */}
-                <div className="absolute top-0 inset-x-0 h-14 bg-linear-to-b from-black/20 to-transparent pointer-events-none z-10" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[68%] bg-linear-to-t from-[#0c0c0e] via-[#0c0c0e]/80 to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-1/2 bg-linear-to-r from-[#0c0c0e]/70 to-transparent md:block" />
 
-                {/* Slide Content */}
-                <div className="absolute bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 left-4 md:left-12 right-4 md:right-auto max-w-xl lg:max-w-2xl flex flex-col gap-2 sm:gap-2.5 md:gap-3 z-20">
-                  {/* Netflix Brand Tagline / Badge */}
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <div className="flex items-center justify-center h-4 w-3.5 sm:h-5 sm:w-4 rounded-xs bg-linear-to-b from-[#E50914] to-[#B81D24] shadow-xs">
-                      <span className="text-[9px] sm:text-[11px] font-black text-white">S</span>
-                    </div>
-                    <span className="text-[10px] sm:text-xs md:text-sm font-extrabold tracking-[0.18em] sm:tracking-[0.22em] text-white uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                      {isTv ? "SNAPFLIX ORIGINAL" : "SNAPFLIX FILM"}
-                    </span>
-                    <span className="bg-[#E50914] text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-xs tracking-wider uppercase drop-shadow-sm">
-                      TOP {idx + 1}
-                    </span>
-                  </div>
+                <div className="absolute inset-x-4 bottom-12 z-20 flex max-w-xl flex-col gap-2 sm:inset-x-8 sm:bottom-14 md:left-12 md:gap-3">
+                  <p className="text-xs font-semibold text-white/80 sm:text-sm">
+                    <span className="text-[#46d369]">{matchPercentage}% match</span>
+                    <span className="mx-2 text-white/35">·</span>
+                    {isPersonalized ? "Recommended for you" : `#${idx + 1} today`}
+                  </p>
 
-                  {/* Title */}
-                  <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white tracking-tight drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)] line-clamp-2 leading-tight">
+                  <h1 className="line-clamp-2 text-[1.7rem] leading-[1.05] font-black tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-6xl">
                     {title}
                   </h1>
 
-                  {/* Top Trending Badge & Metadata */}
-                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 text-[11px] sm:text-xs md:text-sm">
-                    <div className="flex items-center gap-1 bg-black/60 border border-white/20 px-1.5 sm:px-2 py-0.5 rounded text-white font-bold">
-                      <span className="text-[#E50914] font-black text-[10px] sm:text-xs">TOP 10</span>
-                      <span className="text-[10px] sm:text-xs">#{idx + 1} Today</span>
-                    </div>
-                    <span className="font-extrabold text-[#46D369] drop-shadow-sm">
-                      {matchPercentage}% Match
-                    </span>
-                    <span className="text-gray-300 font-medium">{releaseYear}</span>
-                    <span className="border border-white/40 px-1 py-0.2 sm:px-1.5 sm:py-0.5 rounded-xs text-[10px] sm:text-[11px] font-bold text-white uppercase">
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/75 sm:text-sm">
+                    <span>{releaseYear}</span>
+                    <span className="rounded-full border border-white/25 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                       {item.adult ? "18+" : "16+"}
                     </span>
-                    <span className="hidden sm:inline-block border border-white/30 px-1.5 py-0.5 rounded-xs text-[11px] font-bold text-gray-200">
-                      4K Ultra HD
-                    </span>
-                    <span className="hidden md:inline-block border border-white/30 px-1.5 py-0.5 rounded-xs text-[11px] font-bold text-gray-200">
-                      5.1 Audio
-                    </span>
+                    <span className="hidden sm:inline">{isTv ? "Series" : "Film"}</span>
                   </div>
 
-                  {/* Overview */}
-                  <p className="text-xs sm:text-sm md:text-base text-gray-200/90 leading-relaxed line-clamp-2 sm:line-clamp-3 max-w-lg drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    {item.overview || "Stream this blockbuster title now exclusively on SnapFlix."}
+                  <p className="line-clamp-2 hidden max-w-lg text-sm leading-relaxed text-white/80 sm:block md:text-base">
+                    {item.overview || "Stream this title on SnapFlix."}
                   </p>
 
-                  {/* Action Buttons */}
-                  <div className="flex items-center gap-2 sm:gap-3 pt-1 sm:pt-2">
+                  <div className="flex items-center gap-2 pt-1">
                     <Link
                       href={playHref}
-                      className="group/btn flex items-center gap-1.5 sm:gap-2.5 rounded-md bg-white px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-bold text-black shadow-lg transition-all duration-200 hover:bg-white/80 active:scale-95 shrink-0"
+                      className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-bold text-black transition active:scale-95"
                     >
-                      <FaPlay className="text-xs sm:text-sm md:text-base transition-transform group-hover/btn:scale-110" />
-                      <span>Play</span>
+                      <FaPlay className="size-3.5" />
+                      Play
                     </Link>
-
                     <Link
                       href={detailHref}
-                      className="flex items-center gap-1.5 sm:gap-2 rounded-md bg-white/25 backdrop-blur-md px-3.5 sm:px-6 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-semibold text-white transition-all duration-200 hover:bg-white/35 active:scale-95 border border-white/10 shrink-0"
+                      className="sf-chip inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold text-white transition hover:bg-white/15"
                     >
-                      <IoInformationCircleOutline size={18} className="sm:size-[22px]" />
-                      <span>More Info</span>
+                      <IoInformationCircleOutline className="size-5" />
+                      Info
                     </Link>
-
-                    <div className="scale-95 sm:scale-105 shrink-0">
-                      <BookmarkButton data={bookmarkData} />
-                    </div>
+                    <BookmarkButton
+                      data={bookmarkData}
+                      className="sf-chip size-11 min-w-11 rounded-full bg-transparent text-white shadow-none"
+                    />
                   </div>
                 </div>
               </div>
@@ -263,36 +293,55 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
         </div>
       </div>
 
-      {/* Bottom Right: Clean Slide Indicators & Maturity Rating */}
-      <div className="absolute right-4 md:right-12 bottom-6 sm:bottom-10 md:bottom-16 lg:bottom-20 flex items-center gap-2.5 sm:gap-4 z-30">
-        {/* Clean Capsule Slide Indicators */}
-        <div className="flex items-center gap-1.5 sm:gap-2 bg-black/50 backdrop-blur-md px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full border border-white/15">
-          {heroItems.map((_, idx: number) => {
+      <button
+        type="button"
+        onClick={() => emblaApi?.scrollPrev()}
+        aria-label="Previous title"
+        className="sf-glass-strong absolute top-1/2 left-4 z-30 hidden size-11 -translate-y-1/2 place-items-center rounded-full text-white opacity-0 transition group-hover/hero:opacity-100 md:grid"
+      >
+        <FaChevronLeft className="size-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => emblaApi?.scrollNext()}
+        aria-label="Next title"
+        className="sf-glass-strong absolute top-1/2 right-4 z-30 hidden size-11 -translate-y-1/2 place-items-center rounded-full text-white opacity-0 transition group-hover/hero:opacity-100 md:grid"
+      >
+        <FaChevronRight className="size-4" />
+      </button>
+
+      <div className="absolute inset-x-4 bottom-3 z-30 flex items-center gap-3 sm:inset-x-8 md:inset-x-12">
+        <div className="flex min-w-0 flex-1 gap-1.5">
+          {heroItems.map((_, idx) => {
             const isCurrent = idx === currentIndex;
             return (
               <button
                 key={idx}
+                type="button"
                 onClick={() => handleSlideClick(idx)}
-                aria-label={`Slide ${idx + 1}`}
-                className="group/dot relative h-2 rounded-full overflow-hidden transition-all duration-300 focus:outline-hidden cursor-pointer"
-                style={{ width: isCurrent ? "28px" : "10px" }}
+                aria-label={`Show title ${idx + 1}`}
+                aria-current={isCurrent ? "true" : undefined}
+                className="relative h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-white/25"
               >
-                <div
-                  className={`h-full w-full rounded-full transition-colors duration-300 ${
-                    isCurrent
-                      ? "bg-[#E50914] shadow-[0_0_8px_rgba(229,9,20,0.8)]"
-                      : "bg-white/40 group-hover/dot:bg-white/75"
-                  }`}
-                />
+                {isCurrent && (
+                  <span
+                    key={`progress-${currentIndex}-${paused ? "paused" : "play"}`}
+                    className="hero-progress absolute inset-0 origin-left bg-white"
+                  />
+                )}
               </button>
             );
           })}
         </div>
-
-        {/* Maturity Rating Pill */}
-        <div className="hidden sm:flex items-center bg-[#141414]/70 border-l-3 border-[#E50914] py-1.5 pl-3 pr-4 backdrop-blur-xs text-xs font-bold text-gray-200 uppercase tracking-wider">
-          {heroItems[currentIndex]?.adult ? "TV-MA / 18+" : "TV-14 / 16+"}
-        </div>
+        <button
+          type="button"
+          onClick={() => setManualPaused((value) => !value)}
+          aria-pressed={manualPaused}
+          aria-label={manualPaused ? "Play slides" : "Pause slides"}
+          className="sf-chip grid size-9 shrink-0 place-items-center rounded-full text-white"
+        >
+          {manualPaused ? <FaPlay className="size-3" /> : <IoPause className="size-4" />}
+        </button>
       </div>
     </div>
   );

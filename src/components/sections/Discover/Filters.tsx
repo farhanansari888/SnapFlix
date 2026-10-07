@@ -135,15 +135,21 @@ const DiscoverFilters: React.FC = () => {
   };
 
   return (
-    <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-white/10">
-      {/* Left: Title + Media Toggle + Genre Dropdown */}
-      <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white whitespace-nowrap">
-          New & Popular
+    <div className="w-full flex flex-col gap-5">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight text-balance text-white sm:text-4xl">
+          New and popular
         </h1>
+        <p className="mt-2 max-w-xl text-sm text-pretty text-zinc-400">
+          Trending films, series, and genres, refreshed through the day.
+        </p>
+      </div>
+    <div className="sf-glass flex w-full min-w-0 max-w-full flex-col justify-between gap-3 rounded-[1.4rem] p-3 md:flex-row md:items-center md:p-4">
+      {/* Left: Media Toggle + Genre Dropdown */}
+      <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
 
         {/* Media Toggle: Movies vs TV Series */}
-        <div className="inline-flex items-center p-0.5 rounded-full bg-zinc-900/90 border border-white/10 shadow-sm">
+        <div className="sf-chip inline-flex items-center rounded-full p-1">
           <button
             type="button"
             onClick={() => {
@@ -152,10 +158,10 @@ const DiscoverFilters: React.FC = () => {
               setContent("movie");
             }}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer select-none",
+              "flex min-h-10 items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-medium transition-all duration-200 cursor-pointer select-none",
               content === "movie"
-                ? "bg-[#E50914] text-white shadow-sm"
-                : "text-zinc-400 hover:text-white",
+                ? "bg-white text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                : "text-zinc-300 hover:text-white",
             )}
           >
             <FaFilm size={11} />
@@ -170,10 +176,10 @@ const DiscoverFilters: React.FC = () => {
               setContent("tv");
             }}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer select-none",
+              "flex min-h-10 items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-medium transition-all duration-200 cursor-pointer select-none",
               content === "tv"
-                ? "bg-[#E50914] text-white shadow-sm"
-                : "text-zinc-400 hover:text-white",
+                ? "bg-white text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                : "text-zinc-300 hover:text-white",
             )}
           >
             <FaTv size={11} />
@@ -187,10 +193,10 @@ const DiscoverFilters: React.FC = () => {
             type="button"
             onClick={() => setIsGenreOpen((prev) => !prev)}
             className={cn(
-              "flex items-center gap-2 px-3 py-1 rounded-md text-xs font-medium transition-all duration-150 border cursor-pointer select-none",
+              "sf-chip flex min-h-10 items-center gap-2 rounded-full px-3.5 py-1 text-xs font-medium transition-all duration-150 cursor-pointer select-none",
               selectedGenre
-                ? "bg-[#E50914]/20 text-white border-[#E50914]/60"
-                : "bg-zinc-900/90 text-zinc-300 hover:text-white border-white/15 hover:border-white/30",
+                ? "bg-white text-black"
+                : "text-zinc-200 hover:text-white",
             )}
           >
             <span>{selectedGenre ? selectedGenre.name : "Genres"}</span>
@@ -226,7 +232,7 @@ const DiscoverFilters: React.FC = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 4, scale: 0.98 }}
                 transition={{ duration: 0.12 }}
-                className="absolute left-0 top-full mt-2 w-64 sm:w-72 max-h-80 overflow-y-auto z-50 bg-[#121212]/95 backdrop-blur-xl border border-white/15 rounded-xl shadow-2xl p-2 flex flex-col gap-1 no-scrollbar"
+                className="sf-glass-strong absolute left-0 top-full z-50 mt-2 flex max-h-80 w-[min(18rem,calc(100vw-2.5rem))] flex-col gap-1 overflow-y-auto rounded-[1.2rem] p-2 no-scrollbar"
               >
                 {/* All Genres option */}
                 <button
@@ -255,13 +261,13 @@ const DiscoverFilters: React.FC = () => {
                         type="button"
                         onClick={() => handleSelectGenre(g.id)}
                         className={cn(
-                          "px-2 py-1.5 rounded-md text-xs font-medium text-left transition-colors flex items-center justify-between truncate cursor-pointer",
+                          "px-2 py-1.5 rounded-md text-xs font-medium text-left transition-colors flex items-center justify-between gap-1 cursor-pointer",
                           isSelected
                             ? "bg-[#E50914] text-white font-semibold"
                             : "text-zinc-300 hover:text-white hover:bg-white/10",
                         )}
                       >
-                        <span className="truncate">{g.name}</span>
+                        <span className="min-w-0 truncate">{g.name}</span>
                         {isSelected && <IoCheckmark size={12} className="shrink-0 ml-1" />}
                       </button>
                     );
@@ -274,7 +280,7 @@ const DiscoverFilters: React.FC = () => {
       </div>
 
       {/* Right: Clean Quick Tabs (Trending, Popular, Top Rated, etc.) */}
-      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+      <div className="-mx-1 flex min-w-0 max-w-full items-center gap-1 overflow-x-auto overscroll-x-contain px-1 py-0.5 no-scrollbar">
         {quickTabs.map((tab) => {
           const isSelected = queryType === tab.key && !selectedGenre;
           return (
@@ -286,10 +292,10 @@ const DiscoverFilters: React.FC = () => {
                 setQueryType(tab.key as any);
               }}
               className={cn(
-                "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 cursor-pointer select-none",
+                "min-h-10 rounded-full px-3.5 py-1 text-xs font-medium whitespace-nowrap transition-all duration-150 cursor-pointer select-none",
                 isSelected
-                  ? "bg-white text-black font-semibold shadow-sm"
-                  : "text-zinc-400 hover:text-white hover:bg-white/10",
+                  ? "bg-white font-semibold text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                  : "sf-chip text-zinc-200 hover:bg-white/16 hover:text-white",
               )}
             >
               {tab.label}
@@ -297,6 +303,7 @@ const DiscoverFilters: React.FC = () => {
           );
         })}
       </div>
+    </div>
     </div>
   );
 };

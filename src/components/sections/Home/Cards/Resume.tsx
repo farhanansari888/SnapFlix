@@ -32,12 +32,12 @@ const ResumeCard: React.FC<ResumeCardProps> = ({ media }) => {
       <Link href={getRedirectLink()}>
         <div
           className={cn(
-            "group motion-preset-focus relative aspect-video overflow-hidden rounded-lg text-white",
+            "group motion-preset-focus relative aspect-video overflow-hidden rounded-xl text-white ring-1 ring-white/10 shadow-[0_14px_30px_rgba(0,0,0,0.4)] transition hover:ring-[#E50914]/70",
           )}
         >
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="z-10 flex h-12 w-12 items-center justify-center rounded-full bg-black/35 opacity-0 backdrop-blur-xs transition-opacity group-hover:opacity-100">
-              <PlayOutline className="h-6 w-6 text-white" />
+            <div className="z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white text-black opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+              <PlayOutline className="h-6 w-6 text-black" />
             </div>
           </div>
           {media.type === "tv" && (
@@ -71,9 +71,9 @@ const ResumeCard: React.FC<ResumeCardProps> = ({ media }) => {
           />
           <div className="absolute bottom-0 z-2 h-1/2 w-full bg-linear-to-t from-black from-1%" />
           <div className="absolute bottom-0 z-3 flex w-full flex-col gap-1 p-3">
-            <div className="grid grid-cols-[1fr_auto] items-end justify-between gap-5">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end justify-between gap-5">
               <h6 className="truncate text-sm font-semibold">{media.title}</h6>
-              <p className="truncate text-xs">{timeAgo(media.updated_at)}</p>
+              <p className="shrink-0 truncate text-xs">{timeAgo(media.updated_at)}</p>
             </div>
             <div className="flex justify-between text-xs">
               <p>{releaseYear}</p>

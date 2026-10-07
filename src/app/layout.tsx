@@ -10,11 +10,9 @@ import Sidebar from "@/components/ui/layout/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { cn } from "@/utils/helpers";
-import { IS_PRODUCTION, SpacingClasses } from "@/utils/constants";
 import dynamic from "next/dynamic";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Suspense } from "react";
-const Disclaimer = dynamic(() => import("@/components/ui/overlay/Disclaimer"));
 const AdShield = dynamic(() => import("@/components/ui/other/AdShield"));
 
 export const metadata: Metadata = {
@@ -54,30 +52,36 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#141414" },
-    { media: "(prefers-color-scheme: dark)", color: "#141414" },
+    { media: "(prefers-color-scheme: light)", color: "#0c0c0e" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c0c0e" },
   ],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html suppressHydrationWarning lang="en" className="dark">
+    <html suppressHydrationWarning lang="en" className="dark" style={{ colorScheme: "dark" }}>
+      <link rel="preconnect" href="https://image.tmdb.org" crossOrigin="anonymous" />
       <body
         suppressHydrationWarning
         className={cn(
-          "bg-background min-h-dvh antialiased select-none text-foreground overflow-x-hidden",
+          "bg-background min-h-dvh antialiased text-foreground overflow-x-hidden",
           Poppins.className,
           BebasNeue.variable,
         )}
       >
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[80] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"
+        >
+          Skip to content
+        </a>
         <Suspense>
           <NuqsAdapter>
             <Providers>
               <AdShield />
-              {IS_PRODUCTION && <Disclaimer />}
               <TopNavbar />
               <Sidebar>
-                <main className="w-full min-h-screen overflow-x-hidden">
+                <main id="main" className="w-full min-h-screen overflow-x-hidden scroll-mt-20">
                   {children}
                 </main>
               </Sidebar>

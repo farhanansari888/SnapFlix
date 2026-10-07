@@ -107,6 +107,79 @@ export const syncHistory = async (
   }
 };
 
+/**
+ * Manually flips the `completed` flag on an existing history row (the
+ * "Mark as watched" control on the movie page). Only touches Supabase - the
+ * caller is responsible for also updating the local/guest copy, since guests
+ * never reach this action's auth check.
+ */
+export const setHistoryCompleted = async (
+  entry: Pick<
+    HistoryDetail,
+    | "media_id"
+    | "type"
+    | "season"
+    | "episode"
+    | "duration"
+    | "last_position"
+    | "adult"
+    | "backdrop_path"
+    | "poster_path"
+    | "release_date"
+    | "title"
+    | "vote_average"
+  >,
+  completed: boolean,
+): ActionResponse => {
+  if (!entry?.media_id || !entry?.type) {
+    return { success: false, message: "Missing required fields" };
+  }
+
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return { success: false, message: "You must be logged in to sync this change" };
+    }
+
+    const { error } = await supabase.from("histories").upsert(
+      {
+        user_id: user.id,
+        media_id: Number(entry.media_id),
+        type: entry.type,
+        season: entry.season || 0,
+        episode: entry.episode || 0,
+        duration: entry.duration,
+        last_position: entry.last_position,
+        completed,
+        adult: entry.adult || false,
+        backdrop_path: entry.backdrop_path,
+        poster_path: entry.poster_path,
+        release_date: entry.release_date,
+        title: entry.title,
+        vote_average: entry.vote_average,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,media_id,type,season,episode" },
+    );
+
+    if (error) {
+      console.info("History update error:", error);
+      return { success: false, message: "Failed to update history" };
+    }
+
+    return { success: true, message: "History updated" };
+  } catch (error) {
+    console.info("Unexpected error:", error);
+    return { success: false, message: "An unexpected error occurred" };
+  }
+};
+
 export const getUserHistories = async (limit: number = 20): ActionResponse<HistoryDetail[]> => {
   try {
     const cookieStore = await cookies();

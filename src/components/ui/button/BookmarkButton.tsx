@@ -15,9 +15,10 @@ import { usePathname } from "next/navigation";
 interface BookmarkButtonProps {
   data: SavedMovieDetails;
   isTooltipDisabled?: boolean;
+  className?: string;
 }
 
-const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled }) => {
+const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled, className }) => {
   const pathname = usePathname();
   const { startVibration } = useDeviceVibration();
   const { data: user, isLoading: isUserLoading } = useSupabaseUser();
@@ -137,6 +138,7 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ data, isTooltipDisabled
       icon={isSaved ? <BsBookmarkCheckFill size={20} /> : <BsBookmarkFill size={20} />}
       variant={isSaved ? "shadow" : "faded"}
       color="warning"
+      className={className}
       isLoading={isUserLoading || isChecking || isPending}
       tooltip={
         isTooltipDisabled ? undefined : isSaved ? "Remove from Watchlist" : "Add to Watchlist"

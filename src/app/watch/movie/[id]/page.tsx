@@ -154,7 +154,7 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
         {/* Top-Left Floating Back Button */}
         <div
           className={cn(
-            "absolute top-3 left-3 z-30 transition-all duration-300",
+            "absolute top-[max(0.75rem,env(safe-area-inset-top))] left-[max(0.75rem,env(safe-area-inset-left))] z-30 transition-all duration-300",
             isFullscreen && !showControls
               ? "opacity-0 pointer-events-none -translate-y-2"
               : "opacity-100 pointer-events-auto translate-y-0"
@@ -163,7 +163,7 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
           <button
             onClick={handleBack}
             aria-label="Go back"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-white/90 hover:text-white backdrop-blur-md border border-white/20 shadow-xl transition-all hover:scale-105 active:scale-95 text-xs font-semibold cursor-pointer group"
+            className="sf-glass-strong flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/90 transition-all group hover:text-white active:scale-95"
           >
             <IoArrowBack size={16} className="transition-transform group-hover:-translate-x-0.5" />
             <span>Back</span>
@@ -173,7 +173,7 @@ const WatchMoviePage: NextPage<Params<{ id: string }>> = ({ params }) => {
 
       {/* 2. DETAILS & RECOMMENDATIONS (Scrollable in Portrait, Sidebar on Desktop, hidden in Landscape) */}
       {!isFullscreen && (
-        <div className="flex-1 lg:flex-none lg:w-[380px] xl:w-[440px] 2xl:w-[480px] overflow-y-auto w-full bg-[#141414] text-white px-4 sm:px-6 py-4 space-y-5 pb-20 lg:pb-8 player-responsive-details">
+        <div className="flex-1 lg:flex-none lg:w-[380px] xl:w-[440px] 2xl:w-[480px] overflow-y-auto w-full bg-[#0c0c0e] text-white px-4 sm:px-6 py-4 space-y-5 pb-20 lg:pb-8 player-responsive-details">
           {/* Title & Metadata Header */}
           <div className="space-y-1.5 border-b border-white/10 pb-3">
             <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight line-clamp-1">

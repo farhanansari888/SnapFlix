@@ -1,8 +1,8 @@
 "use client";
 
-import { tmdb } from "@/api/tmdb";
+import { searchTitles } from "@/actions/lists";
+import { CatalogSuggestionItem } from "@/types";
 import { cn } from "@/utils/helpers";
-import { MOCK_MOVIES, MOCK_TV_SHOWS } from "@/utils/mockData";
 import { getImageUrl } from "@/utils/movies";
 import { useClickOutside, useDebouncedValue } from "@mantine/hooks";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,16 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FaPlay } from "react-icons/fa6";
 import { IoClose, IoInformationCircleOutline, IoSearchOutline } from "react-icons/io5";
 
-export interface SearchResultItem {
-  id: number;
-  title: string;
-  poster_path?: string | null;
-  backdrop_path?: string | null;
-  release_date?: string;
-  vote_average?: number;
-  media_type: "movie" | "tv";
-  overview?: string;
-}
+export type SearchResultItem = CatalogSuggestionItem;
 
 const NavSearch = () => {
   const router = useRouter();
@@ -31,12 +22,14 @@ const NavSearch = () => {
   const [activeFilter, setActiveFilter] = useState<"all" | "movie" | "tv">("all");
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
     setQuery("");
     setResults([]);
+    setSearchError(null);
   }, []);
 
   // Click outside listener closes the search bar and floating list
@@ -81,92 +74,28 @@ const NavSearch = () => {
     setIsLoading(true);
 
     const searchCatalog = async () => {
-      let combinedResults: SearchResultItem[] = [];
-
       try {
-        const [moviesRes, tvRes] = await Promise.allSettled([
-          tmdb.search.movies({ query: trimmed, page: 1 }),
-          tmdb.search.tvShows({ query: trimmed, page: 1 }),
-        ]);
+        // Real TMDB search, executed by a server action (no client side token).
+        const response = await searchTitles({ query: trimmed, limit: 10 });
 
-        const moviesList: SearchResultItem[] =
-          moviesRes.status === "fulfilled" && moviesRes.value?.results
-            ? moviesRes.value.results.map((m) => ({
-                id: m.id,
-                title: m.title,
-                poster_path: m.poster_path,
-                backdrop_path: m.backdrop_path,
-                release_date: m.release_date,
-                vote_average: m.vote_average,
-                media_type: "movie" as const,
-                overview: m.overview,
-              }))
-            : [];
+        if (!isMounted) return;
 
-        const tvList: SearchResultItem[] =
-          tvRes.status === "fulfilled" && tvRes.value?.results
-            ? tvRes.value.results.map((t) => ({
-                id: t.id,
-                title: t.name,
-                poster_path: t.poster_path,
-                backdrop_path: t.backdrop_path,
-                release_date: t.first_air_date,
-                vote_average: t.vote_average,
-                media_type: "tv" as const,
-                overview: t.overview,
-              }))
-            : [];
-
-        const maxLen = Math.max(moviesList.length, tvList.length);
-        for (let i = 0; i < maxLen; i++) {
-          if (moviesList[i]) combinedResults.push(moviesList[i]);
-          if (tvList[i]) combinedResults.push(tvList[i]);
+        if (!response.ok) {
+          console.warn("TMDB search failed:", response.message);
+          setResults([]);
+          setSearchError(response.message);
+          return;
         }
+
+        setSearchError(null);
+        setResults(response.data);
       } catch (err) {
-        console.warn("TMDB search error in NavSearch, using catalog fallback:", err);
-      }
-
-      // Catalog fallback if empty
-      if (combinedResults.length === 0) {
-        const q = trimmed.toLowerCase();
-        const movieMatches: SearchResultItem[] = MOCK_MOVIES.filter(
-          (m) =>
-            m.title.toLowerCase().includes(q) ||
-            m.original_title.toLowerCase().includes(q) ||
-            (m.overview && m.overview.toLowerCase().includes(q)),
-        ).map((m) => ({
-          id: m.id,
-          title: m.title,
-          poster_path: m.poster_path,
-          backdrop_path: m.backdrop_path,
-          release_date: m.release_date,
-          vote_average: m.vote_average,
-          media_type: "movie",
-          overview: m.overview,
-        }));
-
-        const tvMatches: SearchResultItem[] = MOCK_TV_SHOWS.filter(
-          (t) =>
-            t.name.toLowerCase().includes(q) ||
-            t.original_name.toLowerCase().includes(q) ||
-            (t.overview && t.overview.toLowerCase().includes(q)),
-        ).map((t) => ({
-          id: t.id,
-          title: t.name,
-          poster_path: t.poster_path,
-          backdrop_path: t.backdrop_path,
-          release_date: t.first_air_date,
-          vote_average: t.vote_average,
-          media_type: "tv",
-          overview: t.overview,
-        }));
-
-        combinedResults = [...movieMatches, ...tvMatches];
-      }
-
-      if (isMounted) {
-        setResults(combinedResults);
-        setIsLoading(false);
+        console.warn("TMDB search error:", err);
+        if (!isMounted) return;
+        setResults([]);
+        setSearchError("Search is temporarily unavailable.");
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -201,9 +130,13 @@ const NavSearch = () => {
               type="button"
               onClick={() => setIsOpen(true)}
               aria-label="Search titles, actors, genres"
-              className="flex items-center gap-2 p-2 text-white/80 hover:text-white transition-colors cursor-pointer group"
+              className="sf-chip flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full px-2.5 py-1.5 text-white/85 transition hover:bg-white/16 hover:text-white group"
             >
-              <IoSearchOutline size={20} className="transition-transform duration-200 group-hover:scale-110" />
+              <IoSearchOutline size={18} className="transition-transform duration-200 group-hover:scale-110" />
+              <span className="hidden text-xs font-medium text-white/70 md:inline">Search</span>
+              <kbd className="hidden rounded border border-white/10 bg-black/40 px-1.5 py-0.5 text-[10px] font-semibold text-white/45 lg:inline">
+                Ctrl K
+              </kbd>
             </motion.button>
           ) : (
             <motion.div
@@ -212,16 +145,21 @@ const NavSearch = () => {
               animate={{ width: "auto", opacity: 1, scale: 1 }}
               exit={{ width: 40, opacity: 0, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 420, damping: 30 }}
-              className="flex items-center bg-black/95 border border-[#E50914] focus-within:border-[#E50914] focus-within:ring-1 focus-within:ring-[#E50914] rounded-full px-2.5 py-1 w-44 sm:w-52 md:w-56 shadow-lg shadow-red-950/40 origin-right backdrop-blur-md"
+              className="sf-glass-strong flex w-[min(34vw,11rem)] origin-right items-center rounded-full px-2.5 py-1 focus-within:ring-1 focus-within:ring-white/40 min-[420px]:w-44 sm:w-52 md:w-56"
             >
               <IoSearchOutline size={15} className="text-gray-300 shrink-0 mr-1.5" />
               <input
                 ref={inputRef}
-                type="text"
+                id="nav-search"
+                name="q"
+                type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search..."
-                className="bg-transparent text-xs sm:text-sm text-white placeholder-gray-400 outline-hidden w-full"
+                placeholder="Titles, people, genres…"
+                aria-label="Search titles, people, and genres"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full bg-transparent text-xs text-white placeholder-gray-400 focus-visible:outline-none sm:text-sm"
               />
               <AnimatePresence>
                 {query && (
@@ -265,10 +203,10 @@ const NavSearch = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute top-full right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[360px] md:w-[400px] max-w-[400px] bg-[#161616]/95 backdrop-blur-2xl border border-white/15 rounded-xl shadow-[0_16px_50px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col z-50 text-white"
+            className="sf-glass-strong fixed inset-x-3 top-[calc(env(safe-area-inset-top)+4.7rem)] z-[70] flex max-h-[min(70dvh,28rem)] w-auto max-w-none flex-col overflow-hidden rounded-[1.35rem] text-white sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:max-h-none sm:w-[400px]"
           >
             {/* Header: Category Filter Pills & Results Count */}
-            <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 bg-black/40 border-b border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-black/25 px-3.5 py-2.5">
               <div className="flex items-center gap-1.5">
                 {(["all", "movie", "tv"] as const).map((filter) => {
                   const isActive = activeFilter === filter;
@@ -281,8 +219,8 @@ const NavSearch = () => {
                       className={cn(
                         "px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer",
                         isActive
-                          ? "bg-[#E50914] text-white shadow-xs"
-                          : "bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white",
+                          ? "bg-white text-black"
+                          : "sf-chip text-gray-200 hover:bg-white/20 hover:text-white",
                       )}
                     >
                       {label}
@@ -339,12 +277,21 @@ const NavSearch = () => {
               {!isLoading && filteredResults.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-8 px-4 text-center gap-2">
                   <IoSearchOutline size={30} className="text-gray-500" />
-                  <p className="text-sm font-bold text-white">
-                    No results found for &ldquo;{query}&rdquo;
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Try checking for spelling or search for another movie or series.
-                  </p>
+                  {searchError ? (
+                    <>
+                      <p className="text-sm font-bold text-white">Search is unavailable</p>
+                      <p className="text-xs text-gray-400">{searchError}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-white">
+                        No results found for &ldquo;{query}&rdquo;
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Try checking for spelling or search for another movie or series.
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>

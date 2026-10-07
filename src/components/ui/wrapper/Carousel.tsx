@@ -24,7 +24,7 @@ export interface CarouselProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Carousel = ({
   children,
-  withScrollShadow = true,
+  withScrollShadow = false,
   isButtonDisabled = false,
   autoHideButton = true,
   options = { dragFree: true, slidesToScroll: "auto" },
@@ -51,47 +51,39 @@ const Carousel = ({
     >
       <div
         {...props}
-        className={cn(styles.wrapper, classNames?.wrapper, {
+        className={cn("group/rail", styles.wrapper, classNames?.wrapper, {
           "relative flex w-full flex-col justify-center": !isButtonDisabled,
         })}
       >
         {!isButtonDisabled && (
           <>
-            <div
-              className={cn("absolute z-10 h-full", {
-                "hidden md:block": autoHideButton,
-              })}
-            >
-              <IconButton
-                onPress={c.scrollPrev}
-                size="lg"
-                radius="none"
-                disableRipple
-                icon={<ChevronLeft size={24} />}
-                className={cn("h-full bg-transparent", {
-                  hidden: !c.canScrollPrev,
-                })}
-              />
-            </div>
-            <div
-              className={cn("absolute z-10 h-full place-self-end", {
-                "hidden md:block": autoHideButton,
-              })}
-            >
-              <IconButton
-                onPress={c.scrollNext}
-                size="lg"
-                radius="none"
-                disableRipple
-                icon={<ChevronRight size={24} />}
-                className={cn("h-full bg-transparent", {
-                  hidden: !c.canScrollNext,
-                })}
-              />
-            </div>
+            <IconButton
+              onPress={c.scrollPrev}
+              aria-label="Scroll previous"
+              radius="full"
+              disableRipple
+              icon={<ChevronLeft className="size-5 text-white" />}
+              className={cn(
+                "sf-glass-strong absolute top-1/2 left-2 z-20 hidden size-11 min-w-11 -translate-y-1/2 rounded-full border-white/25 bg-transparent text-white md:flex",
+                autoHideButton && "opacity-0 group-hover/rail:opacity-100",
+                !c.canScrollPrev && "!hidden",
+              )}
+            />
+            <IconButton
+              onPress={c.scrollNext}
+              aria-label="Scroll next"
+              radius="full"
+              disableRipple
+              icon={<ChevronRight className="size-5 text-white" />}
+              className={cn(
+                "sf-glass-strong absolute top-1/2 right-2 z-20 hidden size-11 min-w-11 -translate-y-1/2 rounded-full border-white/25 bg-transparent text-white md:flex",
+                autoHideButton && "opacity-0 group-hover/rail:opacity-100",
+                !c.canScrollNext && "!hidden",
+              )}
+            />
           </>
         )}
-        <div className={cn(styles.viewport, classNames?.viewport)} ref={c.emblaRef}>
+        <div className={cn("overflow-hidden", styles.viewport, classNames?.viewport)} ref={c.emblaRef}>
           <div className={cn(styles.container, classNames?.container)}>{children}</div>
         </div>
       </div>

@@ -16,13 +16,13 @@ const BackToTopButton: React.FC = () => {
   if (!isVisible) return null;
 
   return (
-    <div className={cn("fixed bottom-20 right-4 z-9999 transition-opacity md:bottom-4")}>
+    <div className={cn("fixed right-4 bottom-[max(7.5rem,calc(env(safe-area-inset-bottom)+6.5rem))] z-40 transition-opacity md:bottom-4")}>
       <IconButton
         onPress={scrollToTop}
         icon={<MdKeyboardArrowUp size={24} />}
         variant="shadow"
         color="primary"
-        className="motion-preset-focus"
+        className="sf-glass-strong motion-preset-focus text-white"
         tooltip="Back to top"
         tooltipProps={{ placement: "left" }}
         radius="full"

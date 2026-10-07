@@ -20,15 +20,15 @@ export default heroui({
           foreground: "#FFFFFF",
         },
         //@ts-expect-error this is a custom color name
-        "secondary-background": "#181818",
+        "secondary-background": "#161618",
         focus: "#E50914",
       },
     },
     dark: {
       colors: {
-        background: "#141414",
+        background: "#0c0c0e",
         //@ts-expect-error this is a custom color name
-        "secondary-background": "#181818",
+        "secondary-background": "#161618",
         primary: {
           50: "#FFF0F0",
           100: "#FFD1D3",

@@ -18,17 +18,14 @@ const HomePage: NextPage<HomePageProps> = async ({ searchParams }) => {
   const { content } = await searchParams;
 
   return (
-    <div className="flex flex-col gap-6 md:gap-10">
-      {/* Netflix Full-Bleed Cinematic Hero Billboard */}
+    <div className="flex flex-col">
       <NetflixHeroBillboard contentType={content === "tv" ? "tv" : "movie"} />
 
-      {/* User continue watching */}
-      <ContinueWatching />
+      <div className="relative z-10 flex flex-col gap-8 md:gap-11">
+        <ContinueWatching />
+        <HomePageList />
+      </div>
 
-      {/* Netflix Content Rows & Top 10 */}
-      <HomePageList />
-
-      {/* Netflix Styled Footer */}
       <Footer />
     </div>
   );
