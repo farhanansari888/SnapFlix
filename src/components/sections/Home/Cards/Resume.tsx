@@ -71,9 +71,9 @@ const ResumeCard: React.FC<ResumeCardProps> = ({ media }) => {
           />
           <div className="absolute bottom-0 z-2 h-1/2 w-full bg-linear-to-t from-black from-1%" />
           <div className="absolute bottom-0 z-3 flex w-full flex-col gap-1 p-3">
-            <div className="grid grid-cols-[1fr_auto] items-end justify-between gap-5">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end justify-between gap-5">
               <h6 className="truncate text-sm font-semibold">{media.title}</h6>
-              <p className="truncate text-xs">{timeAgo(media.updated_at)}</p>
+              <p className="shrink-0 truncate text-xs">{timeAgo(media.updated_at)}</p>
             </div>
             <div className="flex justify-between text-xs">
               <p>{releaseYear}</p>

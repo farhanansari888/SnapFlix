@@ -27,8 +27,8 @@ const MoviePlayerHeader: React.FC<MoviePlayerHeaderProps> = ({
       <ActionButton label="Back" href={`/movie/${id}`}>
         <ArrowLeft size={42} />
       </ActionButton>
-      <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
-        <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{movieName}</p>
+      <div className="absolute left-1/2 hidden max-w-[45%] -translate-x-1/2 flex-col justify-center text-center sm:flex">
+        <p className="truncate text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{movieName}</p>
       </div>
       <div className="flex items-center gap-4">
         <ActionButton label="Sources" tooltip="Sources" onClick={onOpenSource}>

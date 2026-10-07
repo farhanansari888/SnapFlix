@@ -65,3 +65,10 @@ export async function getTvSeason(id: number, seasonNumber: number): Promise<Cat
   if (!Number.isFinite(id) || !Number.isFinite(seasonNumber)) return { error: "not-found" };
   return tmdbGet(`/tv/${id}/season/${seasonNumber}`);
 }
+
+export async function getPersonDetails(id: number): Promise<CatalogResult<any>> {
+  if (!Number.isFinite(id)) return { error: "not-found" };
+  return tmdbGet(`/person/${id}`, {
+    append_to_response: "combined_credits,images,external_ids",
+  });
+}

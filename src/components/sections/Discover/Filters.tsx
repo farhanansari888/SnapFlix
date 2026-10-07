@@ -261,13 +261,13 @@ const DiscoverFilters: React.FC = () => {
                         type="button"
                         onClick={() => handleSelectGenre(g.id)}
                         className={cn(
-                          "px-2 py-1.5 rounded-md text-xs font-medium text-left transition-colors flex items-center justify-between truncate cursor-pointer",
+                          "px-2 py-1.5 rounded-md text-xs font-medium text-left transition-colors flex items-center justify-between gap-1 cursor-pointer",
                           isSelected
                             ? "bg-[#E50914] text-white font-semibold"
                             : "text-zinc-300 hover:text-white hover:bg-white/10",
                         )}
                       >
-                        <span className="truncate">{g.name}</span>
+                        <span className="min-w-0 truncate">{g.name}</span>
                         {isSelected && <IoCheckmark size={12} className="shrink-0 ml-1" />}
                       </button>
                     );

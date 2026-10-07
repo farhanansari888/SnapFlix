@@ -114,7 +114,7 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
       href={href}
       shadow="none"
       className={cn(
-        "group motion-preset-blur-right motion-duration-300 grid grid-cols-[auto_1fr] gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-colors",
+        "group motion-preset-blur-right motion-duration-300 grid grid-cols-[auto_minmax(0,1fr)] gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-colors",
         {
           "hover:bg-white/10": !isNotReleased,
           "cursor-not-allowed opacity-50": isNotReleased,
@@ -157,7 +157,7 @@ export const EpisodeListCard: React.FC<EpisodeCardProps> = ({
           {episode.episode_number}
         </Chip>
       </div>
-      <CardBody className="flex space-y-1">
+      <CardBody className="flex min-w-0 flex-col gap-1">
         <p
           title={episode.name}
           className={cn(

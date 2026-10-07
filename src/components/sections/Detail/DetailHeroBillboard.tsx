@@ -1,6 +1,7 @@
 "use client";
 
 import BookmarkButton from "@/components/ui/button/BookmarkButton";
+import MarkCompletedButton from "@/components/ui/button/MarkCompletedButton";
 import ShareButton from "@/components/ui/button/ShareButton";
 import Trailer from "@/components/ui/overlay/Trailer";
 import { SavedMovieDetails } from "@/types/movie";
@@ -119,6 +120,7 @@ const DetailHeroBillboard: React.FC<DetailHeroBillboardProps> = ({
             </button>
           )}
           {videos.length > 0 && <Trailer videos={videos} appearance="chip" />}
+          {!isTv && <MarkCompletedButton movieId={media.id} />}
           <BookmarkButton data={bookmarkData} className={iconChip} />
           <ShareButton id={media.id} title={title} type={type} className={iconChip} />
         </div>

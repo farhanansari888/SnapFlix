@@ -34,9 +34,9 @@ const TvShowPlayerHeader: React.FC<TvShowPlayerHeaderProps> = ({
       <ActionButton label="Back" href={`/tv/${id}`}>
         <ArrowLeft size={42} />
       </ActionButton>
-      <div className="absolute left-1/2 hidden -translate-x-1/2 flex-col justify-center text-center sm:flex">
-        <p className="text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{seriesName}</p>
-        <p className="text-xs text-gray-200 text-shadow-lg sm:text-sm lg:text-base">
+      <div className="absolute left-1/2 hidden max-w-[45%] -translate-x-1/2 flex-col justify-center text-center sm:flex">
+        <p className="truncate text-sm text-white text-shadow-lg sm:text-lg lg:text-xl">{seriesName}</p>
+        <p className="truncate text-xs text-gray-200 text-shadow-lg sm:text-sm lg:text-base">
           {seasonName} - {episode.name}
         </p>
       </div>

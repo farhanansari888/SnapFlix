@@ -2,6 +2,7 @@
 
 import { tmdbFetchList } from "@/api/tmdb-server";
 import {
+  CatalogList,
   CatalogListResponse,
   ContentType,
   MovieListType,
@@ -94,6 +95,63 @@ export async function getTrendingTvShows({
   page?: number;
 }): Promise<CatalogListResponse<TV>> {
   return tmdbFetchList<TV>(`/trending/tv/${timeWindow}`, { page: normalizePage(page) }, REVALIDATE);
+}
+
+/**
+ * Personalized picks seeded from a handful of recently watched titles.
+ *
+ * Fetches TMDB's "recommendations" for each seed id in parallel (server side,
+ * so the TMDB token never reaches the browser), merges the results, drops
+ * duplicates and anything already in the viewer's watch history, then ranks
+ * what's left by rating. Used to replace "today's trending" on the home
+ * billboard once a viewer (guest or signed in) has watch history.
+ */
+export async function getRecommendationsFromHistory({
+  mediaType = "movie",
+  seedIds,
+  excludeIds = [],
+}: {
+  mediaType?: ContentType;
+  seedIds: number[];
+  excludeIds?: number[];
+}): Promise<CatalogListResponse<Movie | TV>> {
+  const ids = Array.from(new Set(seedIds.filter((id) => Number.isFinite(id) && id > 0))).slice(
+    0,
+    5,
+  );
+
+  if (ids.length === 0) {
+    return { ok: true, data: { page: 1, results: [], total_pages: 1, total_results: 0 } };
+  }
+
+  const responses = await Promise.all(
+    ids.map((id) => tmdbFetchList<Movie | TV>(`/${mediaType}/${id}/recommendations`, {}, REVALIDATE)),
+  );
+
+  const okResponses = responses.filter(
+    (response): response is { ok: true; data: CatalogList<Movie | TV> } => response.ok,
+  );
+
+  // Every seed call failed: surface the first error so the caller can decide
+  // whether to fall back (e.g. to trending) instead of showing an empty row.
+  if (okResponses.length === 0) {
+    return responses[0] as CatalogListResponse<Movie | TV>;
+  }
+
+  const exclude = new Set(excludeIds);
+  const merged = new Map<number, Movie | TV>();
+  for (const response of okResponses) {
+    for (const item of response.data.results) {
+      if (!item?.id || exclude.has(item.id) || merged.has(item.id)) continue;
+      merged.set(item.id, item);
+    }
+  }
+
+  const results = Array.from(merged.values()).sort(
+    (a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0),
+  );
+
+  return { ok: true, data: { page: 1, results, total_pages: 1, total_results: results.length } };
 }
 
 /** Any movie collection: popular, now playing, upcoming or top rated. */
