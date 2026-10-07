@@ -3,7 +3,7 @@ import Genres from "@/components/ui/other/Genres";
 import { cn, isEmpty } from "@/utils/helpers";
 import { Calendar, List, Play, Season } from "@/utils/icons";
 import { getImageUrl, mutateTvShowTitle } from "@/utils/movies";
-import { Button, Chip, Image, Link, Spinner } from "@heroui/react";
+import { Button, Image, Link, Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import Rating from "../../../ui/other/Rating";
 import { SavedMovieDetails } from "@/types/movie";
@@ -17,8 +17,12 @@ const TvShowHoverCard: React.FC<{ id: number; fullWidth?: boolean }> = ({ id, fu
 
   if (isPending) {
     return (
-      <div className="h-96 w-80">
-        <Spinner size="lg" color="warning" variant="simple" className="absolute-center" />
+      <div
+        className={cn("sf-glass-strong grid h-96 w-80 place-items-center rounded-[1.4rem]", {
+          "w-full": fullWidth,
+        })}
+      >
+        <Spinner size="lg" color="warning" variant="simple" />
       </div>
     );
   }
@@ -35,6 +39,7 @@ const TvShowHoverCard: React.FC<{ id: number; fullWidth?: boolean }> = ({ id, fu
     tv.images.logos.find((logo) => logo.iso_639_1 === "en")?.file_path,
     "title",
   );
+  const matchPercentage = Math.min(99, Math.round((tv.vote_average || 7.5) * 10 + 8));
   const bookmarkData: SavedMovieDetails = {
     type: "tv",
     adult: "adult" in tv ? (tv.adult as boolean) : false,
@@ -49,13 +54,14 @@ const TvShowHoverCard: React.FC<{ id: number; fullWidth?: boolean }> = ({ id, fu
 
   return (
     <div
-      className={cn("w-80", {
-        "w-full": fullWidth,
-      })}
+      className={cn(
+        "sf-glass-strong w-80 overflow-hidden rounded-[1.4rem] text-white",
+        { "w-full": fullWidth },
+      )}
     >
       <div className="relative">
         <div className="absolute aspect-video h-fit w-full">
-          <div className="absolute z-2 h-full w-full bg-linear-to-t from-secondary-background from-1%"></div>
+          <div className="absolute z-2 h-full w-full bg-linear-to-t from-[#0b0b0e] from-1%"></div>
           {!isEmpty(titleImage) && (
             <Image
               isBlurred
@@ -69,47 +75,53 @@ const TvShowHoverCard: React.FC<{ id: number; fullWidth?: boolean }> = ({ id, fu
           <Image
             radius="none"
             alt={fullTitle}
-            className="z-0 aspect-video rounded-t-lg object-cover object-center"
+            className="z-0 aspect-video w-full object-cover object-center"
             src={backdropImage}
           />
         </div>
-        <div className="flex flex-col gap-2 p-4 pt-[40%] *:z-10">
-          <Chip
-            color="warning"
-            size="sm"
-            variant="faded"
-            className="md:text-md text-xs"
-            classNames={{ content: "font-bold" }}
-          >
-            TV
-          </Chip>
-          <h4 className="line-clamp-2 text-xl font-bold text-white">{fullTitle}</h4>
-          <div className="flex flex-wrap items-center gap-2 text-xs md:gap-2">
-            <span className="font-extrabold text-[#46D369]">
-              {Math.min(99, Math.round((tv.vote_average || 7.5) * 10 + 8))}% Match
+        <div className="relative flex flex-col gap-2 p-4 pt-[40%]">
+          <div className="flex items-center gap-2">
+            <span className="sf-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-white uppercase">
+              <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-[#f5c451]" />
+              TV
             </span>
-            <div className="flex items-center gap-1 text-gray-300">
+          </div>
+          <h4 className="line-clamp-2 text-xl leading-tight font-black tracking-tight text-white">
+            {fullTitle}
+          </h4>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-extrabold text-[#46d369]">{matchPercentage}% Match</span>
+            <div className="flex items-center gap-1 text-white/75">
               <Season />
               <span>
                 {tv.number_of_seasons} Season{tv.number_of_seasons > 1 ? "s" : ""}
               </span>
             </div>
-            <p className="text-gray-500">&#8226;</p>
-            <div className="flex items-center gap-1 text-gray-300">
+            <p className="text-white/35">&#8226;</p>
+            <div className="flex items-center gap-1 text-white/75">
               <List />
               <span>
                 {tv.number_of_episodes} Episode{tv.number_of_episodes > 1 ? "s" : ""}
               </span>
             </div>
-            <p className="text-gray-500">&#8226;</p>
-            <div className="flex items-center gap-1 text-gray-300">
+            <p className="text-white/35">&#8226;</p>
+            <div className="flex items-center gap-1 text-white/75">
               <Calendar />
               <span>{releaseYears}</span>
             </div>
-            <p className="text-gray-500">&#8226;</p>
+            <p className="text-white/35">&#8226;</p>
             <Rating rate={tv.vote_average} count={tv.vote_count} />
           </div>
-          <Genres genres={tv.genres} type="tv" />
+          <Genres
+            genres={tv.genres}
+            type="tv"
+            chipProps={{
+              size: "sm",
+              variant: "flat",
+              radius: "full",
+              className: "sf-chip text-white/85!",
+            }}
+          />
           <div className="flex w-full justify-between gap-2 py-1">
             <Button
               as={Link}
@@ -123,7 +135,7 @@ const TvShowHoverCard: React.FC<{ id: number; fullWidth?: boolean }> = ({ id, fu
             </Button>
             <BookmarkButton data={bookmarkData} isTooltipDisabled />
           </div>
-          <p className="text-sm">{tv.overview}</p>
+          <p className="line-clamp-5 text-sm text-white/80">{tv.overview}</p>
         </div>
       </div>
     </div>
