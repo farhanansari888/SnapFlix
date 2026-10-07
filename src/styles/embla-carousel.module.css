@@ -16,7 +16,13 @@
   cursor: grabbing;
 }
 
+/*
+ * Slides keep the width they declare (fixed-width cards) instead of being
+ * stretched to the intrinsic width of their content. `min-width: max-content`
+ * used to widen cards that hold long text (cast names, episode titles, ...)
+ * which made that text spill outside of the card.
+ */
 .container > * {
   flex: 0 0 auto;
-  min-width: max-content;
+  min-width: 0;
 }

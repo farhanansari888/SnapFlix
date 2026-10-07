@@ -43,10 +43,14 @@ const TvShowPosterCard: React.FC<TvShowPosterCardProps> = ({ tv, variant = "full
       <Tooltip
         isDisabled={mobile}
         showArrow
-        className="bg-secondary-background p-0"
-        shadow="lg"
+        shadow="none"
         delay={1000}
         placement="right-start"
+        classNames={{
+          // The card brings its own cinema glass panel, so the tooltip stays invisible.
+          base: "before:bg-[#1b1b20]!",
+          content: "bg-transparent! p-0!",
+        }}
         content={<TvShowHoverCard id={tv.id} />}
       >
         <Link href={`/tv/${tv.id}`} {...longPress()} className="block">

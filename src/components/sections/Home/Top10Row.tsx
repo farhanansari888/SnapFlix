@@ -85,10 +85,14 @@ const Top10Row: React.FC<Top10RowProps> = ({ contentType: propContentType }) => 
                   <Tooltip
                     isDisabled={mobile}
                     showArrow
-                    className="bg-[#181818] border border-white/10 p-0"
-                    shadow="lg"
+                    shadow="none"
                     delay={800}
                     placement="right-start"
+                    classNames={{
+                      // Same cinema glass chrome as the poster card hover previews.
+                      base: "before:bg-[#1b1b20]!",
+                      content: "bg-transparent! p-0!",
+                    }}
                     content={
                       isTv ? (
                         <TvShowHoverCard id={item.id} />
