@@ -19,11 +19,11 @@ export const languageLabel = (code?: string | null) => {
 interface DetailFactsProps {
   overview?: string;
   tagline?: string;
-  facts: Array<[string, string | null | undefined]>;
+  facts: Array<[string, React.ReactNode]>;
 }
 
 const DetailFacts: React.FC<DetailFactsProps> = ({ overview, tagline, facts }) => {
-  const visible = facts.filter((item): item is [string, string] => Boolean(item[1]));
+  const visible = facts.filter((item): item is [string, React.ReactNode] => Boolean(item[1]));
   if (!overview && !tagline && visible.length === 0) return null;
 
   return (

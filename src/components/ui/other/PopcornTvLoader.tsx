@@ -191,9 +191,9 @@ const PopcornTvLoader: React.FC<PopcornTvLoaderProps> = ({
         >
           <defs>
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FF666E" />
-              <stop offset="55%" stopColor="#E50914" />
-              <stop offset="100%" stopColor="#f5c451" />
+              <stop offset="0%" stopColor="#9CA3AF" />
+              <stop offset="55%" stopColor="#6B7280" />
+              <stop offset="100%" stopColor="#4B5563" />
             </linearGradient>
           </defs>
 

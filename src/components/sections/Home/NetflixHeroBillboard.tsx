@@ -1,10 +1,11 @@
 "use client";
 
-import { getTrendingMovies, getTrendingTvShows } from "@/actions/lists";
+import { getRecommendationsFromHistory, getTrendingMovies, getTrendingTvShows } from "@/actions/lists";
 import BookmarkButton from "@/components/ui/button/BookmarkButton";
 import CatalogErrorState from "@/components/ui/other/CatalogErrorState";
 import PopcornTvLoader from "@/components/ui/other/PopcornTvLoader";
-import { CatalogListResponse } from "@/types";
+import { useWatchHistory } from "@/hooks/useWatchHistory";
+import { CatalogListResponse, ContentType } from "@/types";
 import { SavedMovieDetails } from "@/types/movie";
 import { unwrapCatalog } from "@/utils/catalog";
 import { getImageUrl, mutateMovieTitle, mutateTvShowTitle } from "@/utils/movies";
@@ -19,6 +20,14 @@ import { useSearchParams } from "next/navigation";
 import { Movie, TV } from "tmdb-ts/dist/types";
 import { cn } from "@/utils/helpers";
 
+/** Source the billboard ended up showing, used to tweak its copy. */
+type BillboardSource = "personalized" | "trending";
+
+interface BillboardData {
+  results: (Movie | TV)[];
+  source: BillboardSource;
+}
+
 interface NetflixHeroBillboardProps {
   contentType?: "movie" | "tv";
 }
@@ -29,7 +38,7 @@ const heroFrame =
 
 const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType: propContentType }) => {
   const searchParams = useSearchParams();
-  const currentContent = propContentType || searchParams.get("content") || "movie";
+  const currentContent: ContentType = propContentType || (searchParams.get("content") as ContentType) || "movie";
   const isTv = currentContent === "tv";
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -45,19 +54,51 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
     skipSnaps: false,
   });
 
+  // Watch history (guest localStorage + Supabase when signed in) seeds the
+  // personalized picks below. New viewers with no history fall back to trending.
+  const { data: watchHistory, isLoading: isHistoryLoading } = useWatchHistory();
+
   const { data, isPending, isError, error, refetch, isRefetching } = useQuery({
-    queryKey: ["hero-billboard-trending", currentContent],
-    queryFn: async () => {
-      const response: CatalogListResponse<Movie | TV> = isTv
+    queryKey: [
+      "hero-billboard",
+      currentContent,
+      (watchHistory ?? [])
+        .filter((item) => item.type === currentContent)
+        .map((item) => `${item.media_id}`)
+        .join(","),
+    ],
+    queryFn: async (): Promise<BillboardData> => {
+      const seeds = (watchHistory ?? []).filter((item) => item.type === currentContent);
+
+      if (seeds.length > 0) {
+        try {
+          const recommendationsResponse = await getRecommendationsFromHistory({
+            mediaType: currentContent,
+            seedIds: seeds.map((item) => Number(item.media_id)),
+            excludeIds: (watchHistory ?? []).map((item) => Number(item.media_id)),
+          });
+          const unwrapped = unwrapCatalog(recommendationsResponse);
+          if (unwrapped.results.length > 0) {
+            return { results: unwrapped.results, source: "personalized" };
+          }
+        } catch {
+          // Fall through to trending below.
+        }
+      }
+
+      const trendingResponse: CatalogListResponse<Movie | TV> = isTv
         ? await getTrendingTvShows({ timeWindow: "day" })
         : await getTrendingMovies({ timeWindow: "day" });
 
-      return unwrapCatalog(response);
+      return { results: unwrapCatalog(trendingResponse).results, source: "trending" };
     },
+    enabled: !isHistoryLoading,
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
-  // Extract the top trending titles that actually ship a backdrop.
+  const isPersonalized = data?.source === "personalized";
+
+  // Extract the top titles that actually ship a backdrop.
   const heroItems = useMemo(() => {
     const rawList = data?.results ?? [];
     return rawList.filter((item: any) => Boolean(item.backdrop_path)).slice(0, 4);
@@ -116,7 +157,7 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
       <div className={heroFrame}>
         <Skeleton className="size-full rounded-none opacity-20" />
         <div className="absolute inset-0 z-20 grid place-items-center px-4">
-          <PopcornTvLoader size="lg" label="Loading today's trending" />
+          <PopcornTvLoader size="lg" label="Finding something for you" />
         </div>
       </div>
     );
@@ -206,7 +247,7 @@ const NetflixHeroBillboard: React.FC<NetflixHeroBillboardProps> = ({ contentType
                   <p className="text-xs font-semibold text-white/80 sm:text-sm">
                     <span className="text-[#46d369]">{matchPercentage}% match</span>
                     <span className="mx-2 text-white/35">·</span>
-                    #{idx + 1} today
+                    {isPersonalized ? "Recommended for you" : `#${idx + 1} today`}
                   </p>
 
                   <h1 className="line-clamp-2 text-[1.7rem] leading-[1.05] font-black tracking-tight text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-6xl">

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import useSupabaseUser from "./useSupabaseUser";
 import { queryClient } from "@/app/providers";
 import { tmdb } from "@/api/tmdb";
+import { GUEST_HISTORY_KEY, WATCH_HISTORY_QUERY_KEY } from "./useWatchHistory";
 
 export type PlayerEventType = "play" | "pause" | "seeked" | "ended" | "timeupdate" | "episodechange";
 
@@ -159,7 +160,7 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
     // 1. Always save to LocalStorage (works immediately for guests, offline, and instant display)
     try {
       if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("snapflix_guest_history");
+        const stored = localStorage.getItem(GUEST_HISTORY_KEY);
         const list: any[] = stored ? JSON.parse(stored) : [];
         const existingIdx = list.findIndex(
           (item) =>
@@ -176,8 +177,8 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
           item.completed = completed || false;
           item.updated_at = new Date().toISOString();
           const updated = [item, ...list.filter((_, i) => i !== existingIdx)].slice(0, 20);
-          localStorage.setItem("snapflix_guest_history", JSON.stringify(updated));
-          queryClient.invalidateQueries({ queryKey: ["continue-watching"] });
+          localStorage.setItem(GUEST_HISTORY_KEY, JSON.stringify(updated));
+          queryClient.invalidateQueries({ queryKey: WATCH_HISTORY_QUERY_KEY });
         } else {
           // Fetch title/poster from TMDB
           const fetchPromise =
@@ -206,8 +207,8 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
                 updated_at: new Date().toISOString(),
               };
               const updated = [newItem, ...list].slice(0, 20);
-              localStorage.setItem("snapflix_guest_history", JSON.stringify(updated));
-              queryClient.invalidateQueries({ queryKey: ["continue-watching"] });
+              localStorage.setItem(GUEST_HISTORY_KEY, JSON.stringify(updated));
+              queryClient.invalidateQueries({ queryKey: WATCH_HISTORY_QUERY_KEY });
             })
             .catch(() => {});
         }
@@ -219,7 +220,7 @@ export function usePlayerEvents(options: UsePlayerEventsOptions = {}) {
       const { success, message } = await syncHistory(payload, completed);
       if (success) {
         setLastCurrentTime(data.currentTime);
-        queryClient.invalidateQueries({ queryKey: ["continue-watching"] });
+        queryClient.invalidateQueries({ queryKey: WATCH_HISTORY_QUERY_KEY });
       } else {
         console.error("Save history failed:", message);
       }
